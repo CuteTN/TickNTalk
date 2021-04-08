@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { FlatList, TouchableOpacity, Text } from "react-native"
+import { FlatList, TouchableOpacity, Text, SafeAreaView, Button } from "react-native"
+import Fire from '../firebase/Fire';
 import { connectFirebase } from "../redux/connectors/ConnectFirebase"
 import { connectLoggedIn } from "../redux/connectors/ConnectLoggedIn"
 import { logDebug } from '../Utils/ConsoleLog';
@@ -15,10 +16,32 @@ const Item = ({ item, onPress, backgroundColor, textColor }) => {
     )
 }
 
-const TestFirebaseLoaded = (props) => {
+const handleTestPushClick = () => {
+    Fire.push("user", {userName: "push co dao Chun"})
+}
+
+const handleTestAddZClick = () => {
+    Fire.set("user/z", {userName: "add In cute"})
+    Fire.set("user/z/z/z/z", {"z": "z"})
+}
+
+const handleTestSetClick = () => {
+    Fire.set("user/a", {userName: "set Chun cute"})
+}
+
+const handleTestUpdateClick = () => {
+    Fire.update("user/a", {updatedAt: Date.now()})
+}
+
+const handleTestDeleteClick = () => {
+    Fire.remove("user/z")
+}
+
+const TestFirebaseLoaded = ({db, isLoggedIn}) => {
     const [selectedId, setSelectedId] = useState(null);
-    logDebug(JSON.stringify(props.db.user)) // connected to redux firebase reducer
-    logDebug(JSON.stringify(props.isLoggedIn)) // connected to redux loggedIn reducer
+    logDebug(JSON.stringify(db), true, true)
+    logDebug(JSON.stringify(db.user)) // connected to redux firebase reducer
+    logDebug(JSON.stringify(isLoggedIn)) // connected to redux loggedIn reducer
 
     const renderItem = ({item}) => {
         // logDebug(JSON.stringify(item))
@@ -36,10 +59,21 @@ const TestFirebaseLoaded = (props) => {
     };
 
     return (
-        <FlatList
-            data = {props.db.user}
-            renderItem = {renderItem} 
-        />
+        <SafeAreaView style = {{alignContent: 'center'}}>
+            <Button title="filler button" disabled={true}/>
+            <Button title="filler button" disabled={true}/>
+            <Button title="filler button" disabled={true}/>
+            <FlatList
+                style = {{alignSelf : "center"}}
+                data = {db.user}
+                renderItem = {renderItem} 
+            />
+            <Button title="test Push" onPress={handleTestPushClick}/>
+            <Button title="test Add z" onPress={handleTestAddZClick}/>
+            <Button title="test Set" onPress={handleTestSetClick}/>
+            <Button title="test Update" onPress={handleTestUpdateClick}/>
+            <Button title="test Delete" onPress={handleTestDeleteClick}/>
+        </SafeAreaView>
     )
 }
 

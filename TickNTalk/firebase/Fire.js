@@ -4,8 +4,6 @@ import { createActionUpdateFirebase } from '../redux/actions/CreateActionUpdateF
 import * as log from '../Utils/ConsoleLog';
 
 class Fire {
-    db = null;
-
     static initApp = () => {
         if (!firebase.apps.length) 
             firebase.initializeApp(Fire.firebaseConfig);
@@ -16,8 +14,9 @@ class Fire {
     static init = () => {
         Fire.initApp();
         // this.checkAuth();
-        Fire.db = firebase.database().ref();
     };    
+
+    static getRootRef = () => firebase.database().ref()
 
     static firebaseConfig = {
         apiKey: "AIzaSyDce4VCJ5k9YTfARNVcGwY7X-G-bsiygYM",
@@ -39,9 +38,9 @@ class Fire {
 
     /// name: name of table from the root
     /// retouch: arr => arr: apply some change to the array of db before storing it to redux
-    static subscribeRef = (name, retouch) => {
-        let ref = Fire.db.child(name);
-        log.logInfo(`Listening to Firebase/${name}`, false, false)
+    static subscribeRef = (refPath, retouch) => {
+        let ref = firebase.database().ref().child(refPath);
+        log.logInfo(`Subscribed to Firebase/${refPath}`, false, false)
 
         ref.on("value", 
             (snapshot) => {
@@ -60,12 +59,58 @@ class Fire {
                     list = retouch(list)
 
                 // update to redux
-                reduxStore.dispatch(createActionUpdateFirebase(name, list));
-                log.logSuccess(`Collection ${name} has been retrieved and updated globaly!`)
+                reduxStore.dispatch(createActionUpdateFirebase(refPath, list));
+                log.logSuccess(`Collection ${refPath} has been retrieved and updated globaly!`)
             },
-            (error) => {log.logError(`Failed to retrieve collection ${name}: ${error}`)}
+            (error) => {log.logError(`Failed to retrieve collection ${refPath}: ${error}`)}
         )
     }
+
+    static unSubscribeRef = (refPath) => {
+        let ref = firebase.database().ref().child(refPath);
+        log.logInfo(`Unsubscribed to Firebase/${refPath}`, false, false)
+        ref.off("value")
+    } 
+
+    // push a new item to refPath (i.e value would be in child ref of refPath). auto generate new ID.
+    static push = (refPath, value) => {
+        let ref = firebase.database().ref().child(refPath)
+        const link = ref.push(value).then(
+            (value) => log.logSuccess(`New item was added successfully at ${refPath}: ${value}`),
+            (error) => log.logError(`Could not add new item to ${refPath}:\n${value}\nError: ${error}`)
+        )
+        return link
+    }
+
+    // set refPath new value, remove all old values
+    static set = (refPath, value) => {
+        let ref = firebase.database().ref().child(refPath)
+        let link = ref.set(value).then(
+            (value) => log.logSuccess(`Item was set successfully at ${refPath}`),
+            (error) => log.logError(`Could not set value to ${refPath}:\n${value}\nError: ${error}`)
+        )
+        return link
+    }
+
+    // update refPath new value, keep and override old values
+    static update = (refPath, value) => {
+        let ref = firebase.database().ref().child(refPath)
+        let link = ref.update(value).then(
+            (value) => log.logSuccess(`Item was updated successfully at ${refPath}`),
+            (error) => log.logError(`Could not update value to ${refPath}:\n${value}\nError: ${error}`)
+        )
+        return link
+    }
+
+    static remove = (refPath) => {
+        let ref = firebase.database().ref().child(refPath)
+        let link = ref.remove().then(
+            (value) => log.logSuccess(`Item was removed successfully at ${refPath}`),
+            (error) => log.logError(`Could not remove item from ${refPath}:\n${value}\nError: ${error}`)
+        )
+        return link
+    }
+
 }
 
 Fire.init()
