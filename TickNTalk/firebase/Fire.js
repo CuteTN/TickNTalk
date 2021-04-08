@@ -1,7 +1,7 @@
 import firebase from 'firebase'
 import { reduxStore } from '../redux/store';
 import { createActionUpdateFirebase } from '../redux/actions/CreateActionUpdateFirebase'
-import * as log from '../Utils/ConsoleLog';
+import * as log from '../utils/ConsoleLog';
 
 class Fire {
     static initApp = () => {
@@ -73,9 +73,9 @@ class Fire {
     } 
 
     // push a new item to refPath (i.e value would be in child ref of refPath). auto generate new ID.
-    static push = (refPath, value) => {
+    static push = async (refPath, value) => {
         let ref = firebase.database().ref().child(refPath)
-        const link = ref.push(value).then(
+        const link = await ref.push(value).then(
             (value) => log.logSuccess(`New item was added successfully at ${refPath}: ${value}`),
             (error) => log.logError(`Could not add new item to ${refPath}:\n${value}\nError: ${error}`)
         )
@@ -83,7 +83,7 @@ class Fire {
     }
 
     // set refPath new value, remove all old values
-    static set = (refPath, value) => {
+    static set = async (refPath, value) => {
         let ref = firebase.database().ref().child(refPath)
         let link = ref.set(value).then(
             (value) => log.logSuccess(`Item was set successfully at ${refPath}`),
@@ -93,7 +93,7 @@ class Fire {
     }
 
     // update refPath new value, keep and override old values
-    static update = (refPath, value) => {
+    static update = async (refPath, value) => {
         let ref = firebase.database().ref().child(refPath)
         let link = ref.update(value).then(
             (value) => log.logSuccess(`Item was updated successfully at ${refPath}`),
@@ -102,7 +102,7 @@ class Fire {
         return link
     }
 
-    static remove = (refPath) => {
+    static remove = async (refPath) => {
         let ref = firebase.database().ref().child(refPath)
         let link = ref.remove().then(
             (value) => log.logSuccess(`Item was removed successfully at ${refPath}`),
