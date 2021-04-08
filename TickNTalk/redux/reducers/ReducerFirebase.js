@@ -2,7 +2,7 @@ import * as actionTypes from '../actions/ActionTypes';
 
 const firebaseInitialState = {};
 
-const firebaseReducer = (state = firebaseInitialState, action) => {
+export const reducerFirebase = (state = firebaseInitialState, action) => {
     if(action.type === actionTypes.updateFirebaseAction) {
         const { childName, listData } = action.payload;
 
@@ -16,5 +16,3 @@ const firebaseReducer = (state = firebaseInitialState, action) => {
 
     return state;
 };
-
-export default firebaseReducer;

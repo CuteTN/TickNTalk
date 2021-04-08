@@ -1,6 +1,7 @@
 import firebase from 'firebase'
-import reduxStore from '../redux/store';
-import createUpdateFirebaseAction from '../redux/actions/CreateUpdateFirebaseAction'
+import { reduxStore } from '../redux/store';
+import { createActionUpdateFirebase } from '../redux/actions/CreateActionUpdateFirebase'
+import * as log from '../Utils/ConsoleLog';
 
 class Fire {
     db = null;
@@ -37,10 +38,10 @@ class Fire {
     };
 
     /// name: name of table from the root
-    /// comparer: sometimes you want to sort data once you fetch it home, pass a function to compare 2 item is provided
-    static subscribeRef = (name, comparer = null) => {
+    /// retouch: arr => arr: apply some change to the array of db before storing it to redux
+    static subscribeRef = (name, retouch) => {
         let ref = Fire.db.child(name);
-        Fire[name + "Ref"] = ref;
+        log.logInfo(`Listening to Firebase/${name}`, false, false)
 
         ref.on("value", 
             (snapshot) => {
@@ -55,21 +56,17 @@ class Fire {
                     list.push(item);
                 })
 
-                if(comparer)
-                    list.sort(comparer);
+                if(retouch && typeof retouch === "function")
+                    list = retouch(list)
 
                 // update to redux
-                reduxStore.dispatch(createUpdateFirebaseAction(name, list));
-                // console.log(`${name} updated!`);
+                reduxStore.dispatch(createActionUpdateFirebase(name, list));
+                log.logSuccess(`Collection ${name} has been retrieved and updated globaly!`)
             },
-            (error) => {console.log(error)}
+            (error) => {log.logError(`Failed to retrieve collection ${name}: ${error}`)}
         )
     }
 }
 
-Fire.init();
-// Fire.initApp();
-Fire.subscribeRef("message");
-Fire.subscribeRef("user");
-
-export default Fire;
+Fire.init()
+export default Fire

@@ -1,10 +1,8 @@
 import { combineReducers } from "redux";
-import userReducer from './UserReducer'
-import firebaseReducer from './FirebaseReducer'
+import { reducerLoggedIn } from './ReducerLoggedIn'
+import { reducerFirebase } from './ReducerFirebase'
 
-const allReducers = combineReducers({
-    userReducer,
-    firebaseReducer,
+export const allReducers = combineReducers({
+    reducerLoggedIn,
+    reducerFirebase,
 })
-
-export default allReducers;
