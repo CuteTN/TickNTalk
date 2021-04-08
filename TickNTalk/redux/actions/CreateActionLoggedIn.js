@@ -3,7 +3,7 @@ import * as actionTypes from './ActionTypes'
 export const createActionLogIn = email => ({
     type: actionTypes.logInAction,
     payload: {
-        isLoggedIn = true,
+        isLoggedIn : true,
         email
     }
 })
@@ -11,8 +11,8 @@ export const createActionLogIn = email => ({
 export const createActionLogOut = () => ({
     type: actionTypes.logOutAction,
     payload: {
-        isLoggedIn = false,
-        email = undefined
+        isLoggedIn : false,
+        email : undefined
     }
 })
 

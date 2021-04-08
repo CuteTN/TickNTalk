@@ -1,6 +1,6 @@
 import * as actionTypes from '../actions/ActionTypes';
 
-const loggedInInitialState = {};
+const loggedInInitialState = { isLoggedIn : false };
 
 export const reducerLoggedIn = (state = loggedInInitialState, action) => {
     if(action.type === actionTypes.editUserAction) {
