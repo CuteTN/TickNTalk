@@ -3,7 +3,7 @@ import { FlatList, TouchableOpacity, Text, SafeAreaView, Button } from "react-na
 import Fire from '../firebase/Fire';
 import { connectFirebase } from "../redux/connectors/ConnectFirebase"
 import { connectLoggedIn } from "../redux/connectors/ConnectLoggedIn"
-import { logDebug } from '../utils/ConsoleLog';
+import { logDebug, logError, logInfo, logWarning } from '../utils/ConsoleLog';
 
 const Item = ({ item, onPress, backgroundColor, textColor }) => {
     const userName = item?._value?.userName
@@ -14,6 +14,10 @@ const Item = ({ item, onPress, backgroundColor, textColor }) => {
             <Text style={[textColor]}>{userName}</Text>
         </TouchableOpacity>
     )
+}
+
+const handleTestLogClick = () => {
+    logWarning("Thao cuteeeeee", false, false)
 }
 
 const handleTestPushClick = () => {
@@ -59,15 +63,16 @@ const TestFirebaseLoaded = ({db, isLoggedIn}) => {
     };
 
     return (
-        <SafeAreaView style = {{alignContent: 'center'}}>
+        <SafeAreaView style = {{margin: 50, backgroundColor: "hotpink"}}>
+            {/* <Button title="filler button" disabled={true}/>
             <Button title="filler button" disabled={true}/>
-            <Button title="filler button" disabled={true}/>
-            <Button title="filler button" disabled={true}/>
+            <Button title="filler button" disabled={true}/> */}
             <FlatList
-                style = {{alignSelf : "center"}}
+                style = {{marginTop:100}}
                 data = {db.user}
                 renderItem = {renderItem} 
             />
+            <Button title="test log" onPress={handleTestLogClick}/>
             <Button title="test Push" onPress={handleTestPushClick}/>
             <Button title="test Add z" onPress={handleTestAddZClick}/>
             <Button title="test Set" onPress={handleTestSetClick}/>
