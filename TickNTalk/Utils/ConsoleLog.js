@@ -76,3 +76,4 @@ export const logWarning = (info = "", breakLine = false, addFrame = false, custo
 export const logSuccess = (info = "", breakLine = false, addFrame = false, customStyle = null) => myLog(info, breakLine, "s", addFrame, customStyle)
 export const logError = (info = "", breakLine = true, addFrame = true, customStyle = null) => myLog(info, breakLine, "e", addFrame, customStyle)
 export const logDebug = (info = "", breakLine = false, addFrame = false, customStyle = null) => myLog(info, breakLine, "d", addFrame, customStyle)
+//

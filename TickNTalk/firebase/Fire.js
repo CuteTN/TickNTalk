@@ -1,7 +1,7 @@
 import firebase from 'firebase'
 import { reduxStore } from '../redux/store';
 import { createActionUpdateFirebase } from '../redux/actions/CreateActionUpdateFirebase'
-import * as log from '../utils/ConsoleLog';
+import * as log from '../Utils/ConsoleLog';
 
 class Fire {
     static initApp = () => {

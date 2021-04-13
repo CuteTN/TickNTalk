@@ -3,7 +3,7 @@ import { FlatList, TouchableOpacity, Text, SafeAreaView, Button } from "react-na
 import Fire from '../firebase/Fire';
 import { connectFirebase } from "../redux/connectors/ConnectFirebase"
 import { connectLoggedIn } from "../redux/connectors/ConnectLoggedIn"
-import { logDebug, logError, logInfo, logWarning } from '../utils/ConsoleLog';
+import { logDebug, logError, logInfo, logWarning } from '../Utils/ConsoleLog';
 
 const Item = ({ item, onPress, backgroundColor, textColor }) => {
     const userName = item?._value?.userName
