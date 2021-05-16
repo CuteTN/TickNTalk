@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { FlatList, TouchableOpacity, Text, SafeAreaView, Button } from "react-native"
 import Fire from '../firebase/Fire';
 import { connectFirebase } from "../redux/connectors/ConnectFirebase"
-import { connectLoggedIn } from "../redux/connectors/ConnectLoggedIn"
+import { connectSignedIn } from "../redux/connectors/ConnectSignedIn"
 import { logDebug, logError, logInfo, logWarning } from '../Utils/ConsoleLog';
 
 const Item = ({ item, onPress, backgroundColor, textColor }) => {
@@ -21,65 +21,65 @@ const handleTestLogClick = () => {
 }
 
 const handleTestPushClick = () => {
-    Fire.push("user", {userName: "push co dao Chun"})
+    Fire.push("user", { userName: "push co dao Chun" })
 }
 
 const handleTestAddZClick = () => {
-    Fire.set("user/z", {userName: "add In cute"})
-    Fire.set("user/z/z/z/z", {"z": "z"})
+    Fire.set("user/z", { userName: "add In cute" })
+    Fire.set("user/z/z/z/z", { "z": "z" })
 }
 
 const handleTestSetClick = () => {
-    Fire.set("user/a", {userName: "set Chun cute"})
+    Fire.set("user/a", { userName: "set Chun cute" })
 }
 
 const handleTestUpdateClick = () => {
-    Fire.update("user/a", {updatedAt: Date.now()})
+    Fire.update("user/a", { updatedAt: Date.now() })
 }
 
 const handleTestDeleteClick = () => {
     Fire.remove("user/z")
 }
 
-const TestFirebaseLoaded = ({db, isLoggedIn}) => {
+const TestFirebaseLoaded = ({ db, isSignedIn }) => {
     const [selectedId, setSelectedId] = useState(null);
     logDebug(JSON.stringify(db), true, true)
     logDebug(JSON.stringify(db.user)) // connected to redux firebase reducer
-    logDebug(JSON.stringify(isLoggedIn)) // connected to redux loggedIn reducer
+    logDebug(JSON.stringify(isSignedIn)) // connected to redux signedIn reducer
 
-    const renderItem = ({item}) => {
+    const renderItem = ({ item }) => {
         // logDebug(JSON.stringify(item))
         const backgroundColor = item.id === selectedId ? "#6e3b6e" : "#f9c2ff";
         const color = item.id === selectedId ? 'white' : 'black';
-    
+
         return (
-          <Item
-            item={item}
-            onPress={() => setSelectedId(item.id)}
-            backgroundColor={{ backgroundColor }}
-            textColor={{ color }}
-          />
+            <Item
+                item={item}
+                onPress={() => setSelectedId(item.id)}
+                backgroundColor={{ backgroundColor }}
+                textColor={{ color }}
+            />
         );
     };
 
     return (
-        <SafeAreaView style = {{margin: 50, backgroundColor: "hotpink"}}>
+        <SafeAreaView style={{ margin: 50, backgroundColor: "hotpink" }}>
             {/* <Button title="filler button" disabled={true}/>
             <Button title="filler button" disabled={true}/>
             <Button title="filler button" disabled={true}/> */}
             <FlatList
-                style = {{marginTop:100}}
-                data = {db.user}
-                renderItem = {renderItem} 
+                style={{ marginTop: 100 }}
+                data={db.user}
+                renderItem={renderItem}
             />
-            <Button title="test log" onPress={handleTestLogClick}/>
-            <Button title="test Push" onPress={handleTestPushClick}/>
-            <Button title="test Add z" onPress={handleTestAddZClick}/>
-            <Button title="test Set" onPress={handleTestSetClick}/>
-            <Button title="test Update" onPress={handleTestUpdateClick}/>
-            <Button title="test Delete" onPress={handleTestDeleteClick}/>
+            <Button title="test log" onPress={handleTestLogClick} />
+            <Button title="test Push" onPress={handleTestPushClick} />
+            <Button title="test Add z" onPress={handleTestAddZClick} />
+            <Button title="test Set" onPress={handleTestSetClick} />
+            <Button title="test Update" onPress={handleTestUpdateClick} />
+            <Button title="test Delete" onPress={handleTestDeleteClick} />
         </SafeAreaView>
     )
 }
 
-export default connectFirebase(connectLoggedIn(TestFirebaseLoaded))
+export default connectFirebase(connectSignedIn(TestFirebaseLoaded))

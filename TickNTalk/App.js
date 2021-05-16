@@ -9,18 +9,34 @@ import { reduxStore } from './redux/store';
 // ignore warnings
 import { LogBox } from 'react-native';
 import { Provider } from 'react-redux';
+
+// navigation
+import { NavigationContainer } from "@react-navigation/native";
+import { createStackNavigator } from '@react-navigation/stack'
+import ScreenSignIn from './screens/ScreenSignIn';
+import ScreenSignUp from './screens/ScreenSignUp';
+import ScreenMaster from './screens/ScreenMaster';
+
 LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
 LogBox.ignoreAllLogs();//Ignore all log notifications
 
 dbSetUp()
+const Stack = createStackNavigator()
 
 export default function App() {
   return (
     <Provider store={reduxStore}>
       <View style={styles.container}>
+        <NavigationContainer>
+          <Stack.Navigator initialRouteName="SignIn" headerMode="none">
+            <Stack.Screen name="SignIn" component={ScreenSignIn} />
+            <Stack.Screen name="SignUp" component={ScreenSignUp} />
+            <Stack.Screen name="Master" component={ScreenMaster} />
+          </Stack.Navigator>
+        </NavigationContainer>
         {/* <Text>Open up App.js to start working on your app!</Text>
         <StatusBar style="auto" /> */}
-        <TestFirebaseLoaded/>
+        {/* <TestFirebaseLoaded /> */}
       </View>
     </Provider>
   );

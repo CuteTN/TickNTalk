@@ -1,8 +1,8 @@
 import { combineReducers } from "redux";
-import { reducerLoggedIn } from './ReducerLoggedIn'
+import { reducerSignedIn } from './ReducerSignedIn'
 import { reducerFirebase } from './ReducerFirebase'
 
 export const allReducers = combineReducers({
-    reducerLoggedIn,
+    reducerSignedIn,
     reducerFirebase,
 })

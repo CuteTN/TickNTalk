@@ -2,31 +2,94 @@ import firebase from 'firebase'
 import { reduxStore } from '../redux/store';
 import { createActionUpdateFirebase } from '../redux/actions/CreateActionUpdateFirebase'
 import * as log from '../Utils/ConsoleLog';
+import { firebaseConfig } from './FirebaseConfig';
+import { validateEmail } from '../Utils/FieldsValidating';
 
 class Fire {
     static initApp = () => {
-        if (!firebase.apps.length) 
-            firebase.initializeApp(Fire.firebaseConfig);
+        if (!firebase.apps.length)
+            firebase.initializeApp(firebaseConfig);
         else
             firebase.app();
     };
 
+    static getCurrentUser = () => {
+        return firebase.auth().currentUser
+    }
+
+    static signOut = async () => {
+        let result = false
+        await firebase.auth().signOut().then(
+            () => {
+                log.logSuccess(`Signed out successfully`)
+                result = true
+            },
+            (error) => {
+                log.logError(`Sign out error: `, false, false)
+                log.logError(error)
+            }
+        )
+
+        return result;
+    }
+
+    static signUpWithEmail = async (email, password) => {
+        let result = false
+        email = email.toLowerCase();
+
+        if (!validateEmail(email))
+            log.logError(`${email} is an invalid email`)
+
+        try {
+            await firebase.auth().createUserWithEmailAndPassword(email, password).then(
+                (credential) => {
+                    log.logSuccess(`Created new user with email: ${email}`);
+                    result = true;
+                },
+                (error) => {
+                    log.logError(`Sign up error: `, false, false)
+                    log.logError(error)
+                }
+            );
+        }
+        catch (error) {
+            log.logError(`Sign up error: `, false, false)
+            log.logError(error)
+        }
+
+        return result
+    }
+
+    static signInWithEmail = async (email, password) => {
+        let result = false
+        email = email.toLowerCase();
+
+        try {
+            await firebase.auth().signInWithEmailAndPassword(email, password).then(
+                (credential) => {
+                    log.logSuccess(`user ${email} signed in successfully`)
+                    result = true
+                },
+                (error) => {
+                    log.logError(`Sign in error: `, false, false)
+                    log.logError(error)
+                }
+            );
+        }
+        catch (error) {
+            log.logError(`Sign in error: `, false, false)
+            log.logError(error)
+        }
+
+        return result
+    }
+
     static init = () => {
         Fire.initApp();
         // this.checkAuth();
-    };    
+    };
 
     static getRootRef = () => firebase.database().ref()
-
-    static firebaseConfig = {
-        apiKey: "AIzaSyDce4VCJ5k9YTfARNVcGwY7X-G-bsiygYM",
-        authDomain: "tickntalk2.firebaseapp.com",
-        projectId: "tickntalk2",
-        storageBucket: "tickntalk2.appspot.com",
-        messagingSenderId: "388687038613",
-        appId: "1:388687038613:web:cbd08be62a14fd97b5f39c",
-        measurementId: "G-7G41Y92FYW"
-    };
 
     static checkAuth = () => {
         firebase.auth().onAuthStateChanged(user => {
@@ -42,27 +105,27 @@ class Fire {
         let ref = firebase.database().ref().child(refPath);
         log.logInfo(`Subscribed to Firebase/${refPath}`, false, false)
 
-        ref.on("value", 
+        ref.on("value",
             (snapshot) => {
                 let list = [];
 
                 snapshot.forEach((child) => {
                     let item = {
-                        _key : child.key,
-                        _value : child.toJSON()
+                        _key: child.key,
+                        _value: child.toJSON()
                     }
 
                     list.push(item);
                 })
 
-                if(retouch && typeof retouch === "function")
+                if (retouch && typeof retouch === "function")
                     list = retouch(list)
 
                 // update to redux
                 reduxStore.dispatch(createActionUpdateFirebase(refPath, list));
                 log.logSuccess(`Collection ${refPath} has been retrieved and updated globaly!`)
             },
-            (error) => {log.logError(`Failed to retrieve collection ${refPath}: ${error}`)}
+            (error) => { log.logError(`Failed to retrieve collection ${refPath}: ${error}`) }
         )
     }
 
@@ -70,7 +133,15 @@ class Fire {
         let ref = firebase.database().ref().child(refPath);
         log.logInfo(`Unsubscribed to Firebase/${refPath}`, false, false)
         ref.off("value")
-    } 
+    }
+
+    static get = async (refPath) => {
+        let ref = firebase.database().ref().child(refPath)
+        const item = await ref.get().catch((error) => {
+            log.logError(`Could not find item from ${refPath}:\nError: ${error}`)
+        })
+        return item
+    }
 
     // push a new item to refPath (i.e value would be in child ref of refPath). auto generate new ID.
     static push = async (refPath, value) => {
