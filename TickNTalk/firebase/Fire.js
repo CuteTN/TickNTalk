@@ -44,6 +44,10 @@ class Fire {
             await firebase.auth().createUserWithEmailAndPassword(email, password).then(
                 (credential) => {
                     log.logSuccess(`Created new user with email: ${email}`);
+                    Fire.update(`user/${email.replace('.', '_')}`, {
+                        email,
+                        displayName: email,
+                    })
                     result = true;
                 },
                 (error) => {
