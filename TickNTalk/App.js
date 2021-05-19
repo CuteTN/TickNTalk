@@ -1,7 +1,7 @@
 import Fire from './firebase/Fire'
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import TestFirebaseLoaded from './_testFrame/TestFrame01'
 import { dbSetUp } from './firebase/DbSetUp';
 import { reduxStore } from './redux/store';
@@ -17,6 +17,11 @@ import ScreenSignIn from './screens/ScreenSignIn';
 import ScreenSignUp from './screens/ScreenSignUp';
 import ScreenMaster from './screens/ScreenMaster';
 
+//UI Kitten configs
+import * as eva from '@eva-design/eva';
+import { ApplicationProvider, Layout, Text } from '@ui-kitten/components';
+import { default as theme } from './theme.json';
+
 LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
 LogBox.ignoreAllLogs();//Ignore all log notifications
 
@@ -25,20 +30,22 @@ const Stack = createStackNavigator()
 
 export default function App() {
   return (
-    <Provider store={reduxStore}>
-      <View style={styles.container}>
-        <NavigationContainer>
-          <Stack.Navigator initialRouteName="SignIn" headerMode="none">
-            <Stack.Screen name="SignIn" component={ScreenSignIn} />
-            <Stack.Screen name="SignUp" component={ScreenSignUp} />
-            <Stack.Screen name="Master" component={ScreenMaster} />
-          </Stack.Navigator>
-        </NavigationContainer>
-        {/* <Text>Open up App.js to start working on your app!</Text>
-        <StatusBar style="auto" /> */}
-        {/* <TestFirebaseLoaded /> */}
-      </View>
-    </Provider>
+    <ApplicationProvider {...eva} theme={{...eva.light, ...theme}}> 
+      <Provider store={reduxStore}>
+        <View style={styles.container}>
+          <NavigationContainer>
+            <Stack.Navigator initialRouteName="SignIn" headerMode="none">
+              <Stack.Screen name="SignIn" component={ScreenSignIn} />
+              <Stack.Screen name="SignUp" component={ScreenSignUp} />
+              <Stack.Screen name="Master" component={ScreenMaster} />
+            </Stack.Navigator>
+          </NavigationContainer>
+          {/* <Text>Open up App.js to start working on your app!</Text>
+          <StatusBar style="auto" /> */}
+          {/* <TestFirebaseLoaded /> */}
+        </View>
+      </Provider>
+    </ApplicationProvider>
   );
 }
 
