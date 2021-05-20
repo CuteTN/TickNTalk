@@ -4,6 +4,7 @@ import { createActionUpdateFirebase } from '../redux/actions/CreateActionUpdateF
 import * as log from '../Utils/ConsoleLog';
 import { firebaseConfig } from './FirebaseConfig';
 import { validateEmail } from '../Utils/FieldsValidating';
+import { emailToKey } from '../Utils/emailKeyConvert';
 
 class Fire {
     static initApp = () => {
@@ -44,7 +45,7 @@ class Fire {
             await firebase.auth().createUserWithEmailAndPassword(email, password).then(
                 (credential) => {
                     log.logSuccess(`Created new user with email: ${email}`);
-                    Fire.update(`user/${email.replace('.', '_')}`, {
+                    Fire.update(`user/${emailToKey(email)}`, {
                         email,
                         displayName: email,
                     })
@@ -105,7 +106,7 @@ class Fire {
 
     /// name: name of table from the root
     /// retouch: arr => arr: apply some change to the array of db before storing it to redux
-    static subscribeRef = (refPath, retouch) => {
+    static subscribeReduxRef = (refPath, retouch) => {
         let ref = firebase.database().ref().child(refPath);
         log.logInfo(`Subscribed to Firebase/${refPath}`, false, false)
 
@@ -133,7 +134,7 @@ class Fire {
         )
     }
 
-    static unSubscribeRef = (refPath) => {
+    static unsubscribeReduxRef = (refPath) => {
         let ref = firebase.database().ref().child(refPath);
         log.logInfo(`Unsubscribed to Firebase/${refPath}`, false, false)
         ref.off("value")
