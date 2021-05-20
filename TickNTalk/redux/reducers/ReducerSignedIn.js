@@ -1,4 +1,3 @@
-import Fire from '../../firebase/Fire';
 import * as actionTypes from '../actions/ActionTypes';
 
 const signedInInitialState = { isSignedIn: false };
@@ -11,7 +10,7 @@ export const reducerSignedIn = (state = signedInInitialState, action) => {
         // if(action.type === actionTypes.signOutAction)
         //     Fire.unSubscribeRef(`user/${state.email}`)
 
-        const newState = action.payload
+        const newState = { ...action.payload };
         return newState;
     }
 

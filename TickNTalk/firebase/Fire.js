@@ -5,14 +5,22 @@ import * as log from '../Utils/ConsoleLog';
 import { firebaseConfig } from './FirebaseConfig';
 import { validateEmail } from '../Utils/FieldsValidating';
 import { emailToKey } from '../Utils/emailKeyConvert';
+import { createActionSignIn, createActionSignOut } from '../redux/actions/CreateActionSignedIn';
 
 class Fire {
+    static init = () => {
+        Fire.initApp();
+        this.subscribeCheckAuth();
+    };
+
     static initApp = () => {
         if (!firebase.apps.length)
             firebase.initializeApp(firebaseConfig);
         else
             firebase.app();
     };
+
+    static auth = () => firebase.auth();
 
     static getCurrentUser = () => {
         return firebase.auth().currentUser
@@ -89,17 +97,17 @@ class Fire {
         return result
     }
 
-    static init = () => {
-        Fire.initApp();
-        // this.checkAuth();
-    };
+
 
     static getRootRef = () => firebase.database().ref()
 
-    static checkAuth = () => {
-        firebase.auth().onAuthStateChanged(user => {
+    static subscribeCheckAuth = () => {
+        firebase.auth().onAuthStateChanged(async user => {
             if (!user) {
-                firebase.auth().signInAnonymously();
+                reduxStore.dispatch(createActionSignOut());
+            } else {
+                const { email } = user;
+                await reduxStore.dispatch(createActionSignIn(email));
             }
         })
     };
@@ -189,5 +197,4 @@ class Fire {
 
 }
 
-Fire.init()
 export default Fire

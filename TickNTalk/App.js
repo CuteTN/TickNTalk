@@ -16,11 +16,14 @@ import { createStackNavigator } from '@react-navigation/stack'
 import ScreenSignIn from './screens/ScreenSignIn';
 import ScreenSignUp from './screens/ScreenSignUp';
 import ScreenMaster from './screens/ScreenMaster';
+import ScreenStartUp from './screens/ScreenStartUp';
 
 LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
 LogBox.ignoreAllLogs();//Ignore all log notifications
 
+Fire.init()
 dbSetUp()
+
 const Stack = createStackNavigator()
 
 export default function App() {
@@ -28,7 +31,8 @@ export default function App() {
     <Provider store={reduxStore}>
       <View style={styles.container}>
         <NavigationContainer>
-          <Stack.Navigator initialRouteName="SignIn" headerMode="none">
+          <Stack.Navigator initialRouteName="StartUp" headerMode="none">
+            <Stack.Screen name="StartUp" component={ScreenStartUp} />
             <Stack.Screen name="SignIn" component={ScreenSignIn} />
             <Stack.Screen name="SignUp" component={ScreenSignUp} />
             <Stack.Screen name="Master" component={ScreenMaster} />

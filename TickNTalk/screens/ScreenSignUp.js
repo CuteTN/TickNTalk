@@ -1,9 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
 import { View, Text, Button, TextInput } from 'react-native'
-import { useDispatch } from 'react-redux';
 import Fire from '../firebase/Fire';
-import { createActionSignIn } from '../redux/actions/CreateActionSignedIn';
 import * as styles from '../shared/styles'
 import { logDebug } from '../Utils/ConsoleLog';
 
@@ -12,14 +10,11 @@ const ScreenSignUp = () => {
   const [password, setPassword] = useState()
   const navigation = useNavigation();
 
-  const dispatch = useDispatch();
-
   const handleSignUpPress = () => {
     Fire.signUpWithEmail(email, password).then(
       (isSuccessful) => {
         if (isSuccessful) {
           navigation.navigate("Master");
-          dispatch(createActionSignIn(email));
         }
       }
     )
