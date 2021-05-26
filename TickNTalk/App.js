@@ -19,8 +19,9 @@ import ScreenMaster from './screens/ScreenMaster';
 
 //UI Kitten configs
 import * as eva from '@eva-design/eva';
-import { ApplicationProvider, Layout, Text } from '@ui-kitten/components';
+import { ApplicationProvider, IconRegistry, Layout, Text } from '@ui-kitten/components';
 import { default as theme } from './theme.json';
+import { IoniconPack } from './vector-icons';
 
 LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
 LogBox.ignoreAllLogs();//Ignore all log notifications
@@ -30,22 +31,25 @@ const Stack = createStackNavigator()
 
 export default function App() {
   return (
-    <ApplicationProvider {...eva} theme={{...eva.light, ...theme}}> 
-      <Provider store={reduxStore}>
-        <View style={styles.container}>
-          <NavigationContainer>
-            <Stack.Navigator initialRouteName="SignIn" headerMode="none">
-              <Stack.Screen name="SignIn" component={ScreenSignIn} />
-              <Stack.Screen name="SignUp" component={ScreenSignUp} />
-              <Stack.Screen name="Master" component={ScreenMaster} />
-            </Stack.Navigator>
-          </NavigationContainer>
-          {/* <Text>Open up App.js to start working on your app!</Text>
-          <StatusBar style="auto" /> */}
-          {/* <TestFirebaseLoaded /> */}
-        </View>
-      </Provider>
-    </ApplicationProvider>
+    <>
+      <IconRegistry icons = {IoniconPack}/>
+      <ApplicationProvider {...eva} theme={{...eva.light, ...theme}}> 
+        <Provider store={reduxStore}>
+          <Layout style={styles.container}>
+            <NavigationContainer>
+              <Stack.Navigator initialRouteName="SignIn" headerMode="none">
+                <Stack.Screen name="SignIn" component={ScreenSignIn} />
+                <Stack.Screen name="SignUp" component={ScreenSignUp} />
+                <Stack.Screen name="Master" component={ScreenMaster} />
+              </Stack.Navigator>
+            </NavigationContainer>
+            {/* <Text>Open up App.js to start working on your app!</Text>
+            <StatusBar style="auto" /> */}
+            {/* <TestFirebaseLoaded /> */}
+          </Layout>
+        </Provider>
+      </ApplicationProvider>
+    </>
   );
 }
 

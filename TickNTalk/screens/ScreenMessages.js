@@ -1,12 +1,12 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { Layout, Text } from '@ui-kitten/components';
 import * as styles from '../shared/styles'
 
 const ScreenMessages = () => {
   return (
-    <View style={styles.center}>
+    <Layout style={styles.center}>
       <Text>Messages Screen!</Text>
-    </View>
+    </Layout>
   );
 }
 
