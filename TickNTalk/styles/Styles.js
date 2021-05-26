@@ -5,4 +5,14 @@ export const Styles = StyleService.create ({
         marginHorizontal: 16,
         marginVertical: 8,
     },
+
+    button: {
+        width: 128,
+        borderRadius: 8,
+    },
+
+    outerLayout: {
+        marginHorizontal: 16,
+        marginVertical: 16,
+    },
 });

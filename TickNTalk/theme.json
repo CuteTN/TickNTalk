@@ -93,23 +93,28 @@
   "color-basic-1000": "#1F1F1F",
   "color-basic-1100": "#141414",
 
-  "text-basic-color": "$color-basic-1000",
+  "text-basic-color": "$color-primary-900",
   "text-alternate-color": "$color-basic-100",
   "text-control-color": "$color-basic-100",
   "text-disabled-color": "$color-basic-500",
   "text-hint-color": "$color-basic-700",
 
-  "color-primary-default": "$color-primary-500",
+  "color-primary-default": "$color-primary-600",
   "color-primary-hover": "$color-primary-400",
-  "color-primary-focus": "$color-primary-600",
-  "color-primary-active": "$color-primary-600",
+  "color-primary-focus": "$color-primary-900",
+  "color-primary-active": "$color-primary-900",
   "color-primary-disabled": "$color-basic-transparent-300",
 
   "color-primary-default-border": "$color-primary-default",
   "color-primary-hover-border": "$color-primary-hover",
-  "color-primary-focus-border": "$color-primary-700",
+  "color-primary-focus-border": "$color-primary-focus",
   "color-primary-active-border": "$color-primary-active",
   "color-primary-disabled-border": "$color-primary-disabled",
+
+  "color-success-default": "$color-success-600",
+  "color-info-default": "$color-info-600",
+  "color-warning-default": "$color-warning-600",
+  "color-danger-default": "$color-danger-600",
 
   "background-basic-color-1": "$color-basic-100",
   "background-basic-color-2": "$color-basic-200",
