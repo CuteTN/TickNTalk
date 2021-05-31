@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { FlatList, TouchableOpacity, Text, SafeAreaView, Button } from "react-native"
 import Fire from '../firebase/Fire';
-import { connectFirebase } from "../redux/connectors/ConnectFirebase"
-import { connectSignedIn } from "../redux/connectors/ConnectSignedIn"
 import { logDebug, logError, logInfo, logWarning } from '../Utils/ConsoleLog';
+import { connectFirebase } from '../redux/connectors/ConnectFirebase'
 
 const Item = ({ item, onPress, backgroundColor, textColor }) => {
     const userName = item?._value?.userName
@@ -82,4 +81,4 @@ const TestFirebaseLoaded = ({ db, isSignedIn }) => {
     )
 }
 
-export default connectFirebase(connectSignedIn(TestFirebaseLoaded))
+export default connectFirebase(TestFirebaseLoaded)

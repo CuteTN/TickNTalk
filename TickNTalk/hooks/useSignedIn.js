@@ -1,35 +1,50 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { shallowEqual, useSelector } from 'react-redux';
 import Fire from '../firebase/Fire';
 import { emailToKey } from '../Utils/emailKeyConvert';
 
 /**
  * Get/Set current user info
- * WARNING: This won't track the change of redux data itself. Yet I don't even know why :)
- * @returns {{email: string, user: any, updateUser: (newValue: any) => void}}
+ * @returns {{user: any, updateUser: (newValue: any) => void, status: "Unknown"|"SignedIn"|"NotSignedIn"}}
  */
 export const useSignedIn = () => {
-  const { email } = useSelector(state => state.reducerSignedIn, shallowEqual);
-  const [user, setUser] = useState()
+  // const { email } = useSelector(state => state.reducerSignedIn, shallowEqual);
+  const [email, setEmail] = useState(null);
+  const [user, setUser] = useState(null);
 
-  const userId = emailToKey(email);
+  /** @type ["Unknown"|"SignedIn"|"NotSignedIn", React.Dispatch<React.SetStateAction<"Unknown"|"SignedIn"|"NotSignedIn">>] */
+  const [status, setStatus] = useState("Unknown");
 
+  // subscribe to auth change
   useEffect(() => {
-    const childRef = Fire.getRootRef().child(`user/${userId}`);
+    const changeUserUnlistener = Fire.auth().onAuthStateChanged(newUser => {
+      setEmail(newUser?.email);
+      setStatus(newUser ? "SignedIn" : "NotSignedIn")
+    })
 
-    const listener = childRef.on("value", (snapshot) => {
+    return changeUserUnlistener;
+  }, []);
+
+  // subscribe to user info update
+  useEffect(() => {
+    const userId = emailToKey(email);
+    const childRef = Fire.getRootRef().child(`user/${userId}`);
+    const updateUserListener = childRef.on("value", (snapshot) => {
       setUser(snapshot.toJSON());
     })
 
     return () => {
-      childRef.off("value", listener);
+      childRef.off("value", updateUserListener);
     }
-  }, []);
+  }, [email]);
+
 
   const updateUser = (newValue) => {
-    if (email)
+    if (email) {
+      const userId = emailToKey(email);
       Fire.update(`user/${userId}`, newValue);
+    }
   }
 
-  return { user, updateUser }
+  return { user, updateUser, status }
 }

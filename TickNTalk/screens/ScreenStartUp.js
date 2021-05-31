@@ -1,23 +1,23 @@
 import { useNavigation } from '@react-navigation/native';
 import React, { useEffect } from 'react';
+import { useRef } from 'react';
 import { Text, View } from 'react-native'
-import Fire from '../firebase/Fire';
+import { useSignedIn } from '../hooks/useSignedIn';
 
 const ScreenStartUp = () => {
   const navigation = useNavigation();
+  const { status } = useSignedIn();
 
   useEffect(() => {
-    const unsubscribe = Fire.auth().onAuthStateChanged((user) => {
-      if (user)
+    switch (status) {
+      case "SignedIn":
         navigation.navigate("Master");
-      else
+        break;
+      case "NotSignedIn":
         navigation.navigate("SignIn");
-    })
-
-    return () => {
-      unsubscribe();
+        break;
     }
-  }, [])
+  }, [status])
 
   return (
     <View>

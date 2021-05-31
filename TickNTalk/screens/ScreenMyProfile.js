@@ -1,8 +1,8 @@
 import { useNavigation } from '@react-navigation/native';
 import React from 'react';
-import { View, Text, Button } from 'react-native';
-import Fire from '../firebase/Fire';
+import { Layout, Text, Button } from '@ui-kitten/components';
 import { useSignedIn } from '../hooks/useSignedIn';
+import Fire from '../firebase/Fire';
 import * as styles from '../shared/styles'
 
 const ScreenMyProfile = () => {
@@ -28,13 +28,11 @@ const ScreenMyProfile = () => {
   //#endregion
 
   return (
-    <View style={styles.center}>
+    <Layout style={styles.center}>
       <Text>MyProfile Screen!</Text>
       <Text>You've signed in with email {JSON.stringify(user)}</Text>
-      <Button title="Sign out" onPress={handleSignOutPress} />
-      <Button title="nav to Sign in" onPress={handleNavToSignInPress} />
-      <Button title="Test update user" onPress={handleTestUpdateUserPress} />
-    </View>
+      <Button onPress={handleSignOutPress}>Sign out</Button>
+    </Layout>
   );
 }
 

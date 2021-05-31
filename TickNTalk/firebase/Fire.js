@@ -5,12 +5,10 @@ import * as log from '../Utils/ConsoleLog';
 import { firebaseConfig } from './FirebaseConfig';
 import { validateEmail } from '../Utils/FieldsValidating';
 import { emailToKey } from '../Utils/emailKeyConvert';
-import { createActionSignIn, createActionSignOut } from '../redux/actions/CreateActionSignedIn';
 
 class Fire {
     static init = () => {
         Fire.initApp();
-        this.subscribeCheckAuth();
     };
 
     static initApp = () => {
@@ -100,17 +98,6 @@ class Fire {
 
 
     static getRootRef = () => firebase.database().ref()
-
-    static subscribeCheckAuth = () => {
-        firebase.auth().onAuthStateChanged(async user => {
-            if (!user) {
-                reduxStore.dispatch(createActionSignOut());
-            } else {
-                const { email } = user;
-                await reduxStore.dispatch(createActionSignIn(email));
-            }
-        })
-    };
 
     /// name: name of table from the root
     /// retouch: arr => arr: apply some change to the array of db before storing it to redux

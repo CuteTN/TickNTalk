@@ -1,5 +1,5 @@
 import React from 'react';
-import { View } from 'react-native';
+import { Layout } from '@ui-kitten/components';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import * as styles from '../shared/styles'
 import ScreenMessages from './ScreenMessages'
