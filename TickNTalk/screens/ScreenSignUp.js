@@ -1,15 +1,23 @@
 import { useNavigation } from '@react-navigation/native';
-import React, { useState } from 'react';
-import { Layout, Text, Button, Input, Avatar } from '@ui-kitten/components';
+import React, { useRef, useState } from 'react';
+import { Layout, Text, Button, Input, Avatar, Select, SelectItem, Datepicker, Icon } from '@ui-kitten/components';
 import Fire from '../firebase/Fire';
 import * as styles from '../shared/styles'
 import { Styles } from '../styles/Styles';
-import { ImageBackground, SafeAreaView } from "react-native";
+import { ImageBackground, Image, Keyboard, RecyclerViewBackedScrollView, SafeAreaView } from "react-native";
 
 const ScreenSignUp = () => {
   const [email, setEmail] = useState()
   const [password, setPassword] = useState()
+
+  const GENDERS = ["Male", "Female", "Other"];
+  const [genderSelectedIndex, setGenderSelectedIndex] = useState();
+
+  const [selectedBirthday, setSelectedBirthday] = useState(new Date());
+
   const navigation = useNavigation();
+
+  const getCurrentGender = () => GENDERS[genderSelectedIndex - 1];
 
   const handleSignUpPress = () => {
     Fire.signUpWithEmail(email, password).then(
@@ -24,6 +32,11 @@ const ScreenSignUp = () => {
   const handleSignInPress = () => {
     navigation.navigate("SignIn");
   };
+
+  const rowStyle = {
+    ...Styles.overall,
+    ...Styles.row,
+  }
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -45,9 +58,69 @@ const ScreenSignUp = () => {
             onChangeText={setEmail}
           />
 
+          <Layout style={rowStyle}>
+            <Input
+              style={{ flex: 3, paddingRight: 4 }}
+              placeholder={"First name"}
+              onChangeText={setEmail}
+            />
+
+            <Input
+              style={{ flex: 2, paddingLeft: 4 }}
+              placeholder={"Last name"}
+              onChangeText={setEmail}
+            />
+          </Layout>
+
+
+
+          <Layout style={rowStyle}>
+            <Datepicker
+              date={selectedBirthday}
+              min={new Date(1900, 1, 1)}
+              max={new Date(Date.now())}
+              style={{ flex: 3, paddingRight: 4 }}
+              onSelect={setSelectedBirthday}
+              placeholder={"Birthday"}
+            />
+
+            <Select
+              style={{ flex: 2, paddingLeft: 4 }}
+              placeholder={"Gender"}
+              value={getCurrentGender()}
+              selectedIndex={genderSelectedIndex}
+              onSelect={setGenderSelectedIndex}
+            >
+              {GENDERS.map(g => <SelectItem title={g} />)}
+            </Select>
+          </Layout>
+
+          <Layout style={rowStyle}>
+            <Input
+              style={{ flex: 1 }}
+              placeholder={"Country"}
+              keyboardType="email-address"
+              onChangeText={setEmail}
+            />
+          </Layout>
+
+          <Input
+            style={Styles.overall}
+            placeholder={"Phone number"}
+            keyboardType="phone-pad"
+            onChangeText={setEmail}
+          />
+
           <Input
             style={Styles.overall}
             placeholder={"Password"}
+            secureTextEntry={true}
+            onChangeText={setPassword}
+          />
+
+          <Input
+            style={Styles.overall}
+            placeholder={"Confirm password"}
             secureTextEntry={true}
             onChangeText={setPassword}
           />
@@ -69,7 +142,7 @@ const ScreenSignUp = () => {
           </Layout>
         </Layout>
       </ImageBackground>
-    </SafeAreaView>
+    </SafeAreaView >
   );
 }
 
