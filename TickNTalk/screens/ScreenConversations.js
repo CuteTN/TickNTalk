@@ -5,7 +5,7 @@ import * as styles from '../shared/styles'
 const ScreenConversations = () => {
   return (
     <Layout style={styles.center}>
-      <Text>conversations Screen!</Text>
+      <Text>Conversations Screen!</Text>
     </Layout>
   );
 }

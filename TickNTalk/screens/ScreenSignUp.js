@@ -40,7 +40,7 @@ const ScreenSignUp = () => {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <Layout style={{ flex: 1 }}>
       <ImageBackground source={require('../assets/bg.png')}
         style={{ flex: 1, resizeMode: "cover" }}
       >
@@ -143,7 +143,7 @@ const ScreenSignUp = () => {
           </Layout>
         </Layout>
       </ImageBackground>
-    </SafeAreaView >
+    </Layout >
   );
 }
 
