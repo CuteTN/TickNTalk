@@ -25,23 +25,26 @@ class Fire {
     }
 
     static signOut = async () => {
-        let result = false
+        let successful = false
+        let errorMessage = undefined;
+
         await firebase.auth().signOut().then(
             () => {
                 log.logSuccess(`Signed out successfully`)
-                result = true
+                successful = true
             },
             (error) => {
-                log.logError(`Sign out error: `, false, false)
-                log.logError(error)
+                console.error(error);
+                errorMessage = error
             }
         )
 
-        return result;
+        return { successful, errorMessage };
     }
 
     static signUpWithEmail = async (email, password) => {
-        let result = false
+        let successful = false;
+        let errorMessage = undefined;
         email = email.toLowerCase();
 
         if (!validateEmail(email))
@@ -55,44 +58,45 @@ class Fire {
                         email,
                         displayName: email,
                     })
-                    result = true;
+                    successful = true;
                 },
                 (error) => {
-                    log.logError(`Sign up error: `, false, false)
-                    log.logError(error)
+                    console.error(error);
+                    errorMessage = error;
                 }
             );
         }
         catch (error) {
-            log.logError(`Sign up error: `, false, false)
-            log.logError(error)
+            console.error(error);
+            errorMessage = error;
         }
 
-        return result
+        return { successful, errorMessage }
     }
 
     static signInWithEmail = async (email, password) => {
-        let result = false
+        let successful = false;
+        let errorMessage = undefined;
         email = email.toLowerCase();
 
         try {
             await firebase.auth().signInWithEmailAndPassword(email, password).then(
                 (credential) => {
                     log.logSuccess(`user ${email} signed in successfully`)
-                    result = true
+                    successful = true
                 },
                 (error) => {
-                    log.logError(`Sign in error: `, false, false)
-                    log.logError(error)
+                    console.error(error);
+                    errorMessage = error;
                 }
             );
         }
         catch (error) {
-            log.logError(`Sign in error: `, false, false)
-            log.logError(error)
+            console.error(error);
+            errorMessage = error;
         }
 
-        return result
+        return { successful, errorMessage }
     }
 
 

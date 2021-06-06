@@ -6,6 +6,7 @@ import * as styles from "../shared/styles";
 import { Styles } from "../styles/Styles";
 import { ImageBackground, SafeAreaView } from "react-native";
 import { SCREENS } from ".";
+import { showMessage } from "react-native-flash-message";
 
 export default ScreenSignIn = () => {
   const [email, setEmail] = useState();
@@ -14,9 +15,13 @@ export default ScreenSignIn = () => {
 
   const handleSignInPress = () => {
     Fire.signInWithEmail(email, password).then(
-      (isSuccess) => {
-        if (isSuccess) {
+      ({ successful, errorMessage }) => {
+        if (successful) {
           navigation.navigate(SCREENS.master.name);
+          showMessage({ type: 'success', message: `Signed in with email ${email}` });
+        }
+        if (errorMessage) {
+          showMessage({ type: 'danger', message: errorMessage.message });
         }
       }
     );

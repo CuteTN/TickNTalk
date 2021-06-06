@@ -11,12 +11,19 @@ const ScreenMyProfile = () => {
   const { user, updateUser } = useSignedIn();
 
   const handleSignOutPress = () => {
-    Fire.signOut().then(isSuccessful => {
-      if (isSuccessful)
-        navigation.navigate(SCREENS.signIn.name);
-    })
-
+    Fire.signOut().then(
+      ({ successful, errorMessage }) => {
+        if (successful) {
+          showMessage({ type: 'success', message: `Sign out successfully!` })
+          navigation.navigate(SCREENS.signIn.name);
+        }
+        if (errorMessage) {
+          showMessage({ type: 'danger', message: errorMessage.message });
+        }
+      }
+    )
   }
+
 
   return (
     <Layout style={styles.center}>

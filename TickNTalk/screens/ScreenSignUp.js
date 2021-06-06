@@ -1,33 +1,49 @@
 import { useNavigation } from '@react-navigation/native';
 import React, { useRef, useState } from 'react';
-import { Layout, Text, Button, Input, Avatar, Select, SelectItem, Datepicker, Icon } from '@ui-kitten/components';
+import { Layout, Text, Button, Input, Avatar } from '@ui-kitten/components';
 import Fire from '../firebase/Fire';
 import * as styles from '../shared/styles'
 import { Styles } from '../styles/Styles';
-import { ImageBackground, Image, Keyboard, RecyclerViewBackedScrollView, SafeAreaView } from "react-native";
+import { ImageBackground, SafeAreaView } from "react-native";
 import { SCREENS } from '.';
+import { validateEmail } from '../Utils/FieldsValidating';
+import { showMessage } from 'react-native-flash-message';
 
 const ScreenSignUp = () => {
-  const [email, setEmail] = useState()
-  const [password, setPassword] = useState()
-
-  const GENDERS = ["Male", "Female", "Other"];
-  const [genderSelectedIndex, setGenderSelectedIndex] = useState();
-
-  const [selectedBirthday, setSelectedBirthday] = useState(new Date());
+  /** @typedef {{email:string, password:string, passwordConfirm:string}} inputType */
+  /** @type [inputType, React.Dispatch<(prevState: inputType) => inputType>] */
+  const [input, setInput] = useState();
 
   const navigation = useNavigation();
 
-  const getCurrentGender = () => GENDERS[genderSelectedIndex - 1];
-
   const handleSignUpPress = () => {
+    const { email, password, passwordConfirm } = input;
+
+    if (!validateEmail(email)) {
+      showMessage({ message: "Email is not valid.", type: 'danger' });
+      return;
+    };
+
+    if (password !== passwordConfirm) {
+      showMessage({ message: "Password confirmation doesn't match", type: "danger" });
+      return;
+    }
+
     Fire.signUpWithEmail(email, password).then(
-      (isSuccessful) => {
-        if (isSuccessful) {
+      ({ successful, errorMessage }) => {
+        if (successful) {
           navigation.navigate(SCREENS.master.name);
+          showMessage({ type: 'success', message: `Sign up with email ${email} successfully!` })
+        }
+        if (errorMessage) {
+          showMessage({ type: 'danger', message: errorMessage.message });
         }
       }
     )
+  }
+
+  const handleInputChangeFunc = (field) => (newValue) => {
+    setInput(prev => ({ ...prev, [field]: newValue }));
   }
 
   const handleSignInPress = () => {
@@ -56,74 +72,21 @@ const ScreenSignUp = () => {
             style={Styles.overall}
             placeholder={"Email"}
             keyboardType="email-address"
-            onChangeText={setEmail}
-          />
-
-          <Layout style={rowStyle}>
-            <Input
-              style={{ flex: 3, paddingRight: 4 }}
-              placeholder={"First name"}
-              onChangeText={setEmail}
-            />
-
-            <Input
-              style={{ flex: 2, paddingLeft: 4 }}
-              placeholder={"Last name"}
-              onChangeText={setEmail}
-            />
-          </Layout>
-
-
-
-          <Layout style={rowStyle}>
-            <Datepicker
-              date={selectedBirthday}
-              min={new Date(1900, 1, 1)}
-              max={new Date(Date.now())}
-              style={{ flex: 3, paddingRight: 4 }}
-              onSelect={setSelectedBirthday}
-              placeholder={"Birthday"}
-            />
-
-            <Select
-              style={{ flex: 2, paddingLeft: 4 }}
-              placeholder={"Gender"}
-              value={getCurrentGender()}
-              selectedIndex={genderSelectedIndex}
-              onSelect={setGenderSelectedIndex}
-            >
-              {GENDERS.map(g => <SelectItem title={g} />)}
-            </Select>
-          </Layout>
-
-          <Layout style={rowStyle}>
-            <Input
-              style={{ flex: 1 }}
-              placeholder={"Country"}
-              keyboardType="email-address"
-              onChangeText={setEmail}
-            />
-          </Layout>
-
-          <Input
-            style={Styles.overall}
-            placeholder={"Phone number"}
-            keyboardType="phone-pad"
-            onChangeText={setEmail}
+            onChangeText={handleInputChangeFunc("email")}
           />
 
           <Input
             style={Styles.overall}
             placeholder={"Password"}
             secureTextEntry={true}
-            onChangeText={setPassword}
+            onChangeText={handleInputChangeFunc("password")}
           />
 
           <Input
             style={Styles.overall}
             placeholder={"Confirm password"}
             secureTextEntry={true}
-            onChangeText={setPassword}
+            onChangeText={handleInputChangeFunc("passwordConfirm")}
           />
 
           <Button style={[Styles.overall, Styles.button]}

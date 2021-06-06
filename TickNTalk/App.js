@@ -20,6 +20,8 @@ import { default as theme } from './theme.json';
 import { IoniconPack } from './vector-icons';
 import { SCREENS } from './screens';
 
+import FlashMessage from "react-native-flash-message";
+
 LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
 LogBox.ignoreAllLogs();//Ignore all log notifications
 
@@ -48,6 +50,7 @@ export default function App() {
           </Layout>
         </Provider>
       </ApplicationProvider>
+      <FlashMessage position="bottom" animated={true} />
     </>
   );
 }
