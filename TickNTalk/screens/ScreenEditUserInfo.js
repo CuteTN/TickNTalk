@@ -7,7 +7,7 @@ import { Styles } from '../styles/Styles';
 import { ImageBackground, Image, Keyboard, RecyclerViewBackedScrollView, SafeAreaView } from "react-native";
 import { SCREENS } from '.';
 
-const ScreenSignUp = () => {
+const ScreenEditUserInfo = () => {
   const [email, setEmail] = useState()
   const [password, setPassword] = useState()
 
@@ -147,4 +147,4 @@ const ScreenSignUp = () => {
   );
 }
 
-export default ScreenSignUp;
+export default ScreenEditUserInfo;

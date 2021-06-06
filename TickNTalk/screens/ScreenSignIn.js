@@ -5,8 +5,9 @@ import Fire from "../firebase/Fire";
 import * as styles from "../shared/styles";
 import { Styles } from "../styles/Styles";
 import { ImageBackground, SafeAreaView } from "react-native";
+import { SCREENS } from ".";
 
-const ScreenSignIn = () => {
+export default ScreenSignIn = () => {
   const [email, setEmail] = useState();
   const [password, setPassword] = useState();
   const navigation = useNavigation();
@@ -15,14 +16,14 @@ const ScreenSignIn = () => {
     Fire.signInWithEmail(email, password).then(
       (isSuccess) => {
         if (isSuccess) {
-          navigation.navigate("Master");
+          navigation.navigate(SCREENS.master.name);
         }
       }
     );
   };
 
   const handleSignUpPress = () => {
-    navigation.navigate("SignUp");
+    navigation.navigate(SCREENS.signUp.name);
   };
 
   return (
@@ -72,5 +73,3 @@ const ScreenSignIn = () => {
     </SafeAreaView>
   );
 };
-
-export default ScreenSignIn;

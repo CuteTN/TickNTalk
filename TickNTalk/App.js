@@ -12,16 +12,13 @@ import { Provider } from 'react-redux';
 // navigation
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from '@react-navigation/stack'
-import ScreenSignIn from './screens/ScreenSignIn';
-import ScreenSignUp from './screens/ScreenSignUp';
-import ScreenMaster from './screens/ScreenMaster';
-import ScreenStartUp from './screens/ScreenStartUp';
 
 //UI Kitten configs
 import * as eva from '@eva-design/eva';
 import { ApplicationProvider, IconRegistry, Layout, Text } from '@ui-kitten/components';
 import { default as theme } from './theme.json';
 import { IoniconPack } from './vector-icons';
+import { SCREENS } from './screens';
 
 LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
 LogBox.ignoreAllLogs();//Ignore all log notifications
@@ -39,11 +36,10 @@ export default function App() {
         <Provider store={reduxStore}>
           <Layout style={styles.container}>
             <NavigationContainer>
-              <Stack.Navigator initialRouteName="StartUp" headerMode="none">
-                <Stack.Screen name="StartUp" component={ScreenStartUp} />
-                <Stack.Screen name="SignIn" component={ScreenSignIn} />
-                <Stack.Screen name="SignUp" component={ScreenSignUp} />
-                <Stack.Screen name="Master" component={ScreenMaster} />
+              <Stack.Navigator initialRouteName={SCREENS.startUp.name} headerMode="none">
+                {Object.values(SCREENS).filter(scr => scr.screen).map(scr =>
+                  (<Stack.Screen name={scr.name} component={scr.screen} />)
+                )}
               </Stack.Navigator>
             </NavigationContainer>
             {/* <Text>Open up App.js to start working on your app!</Text>

@@ -2,12 +2,12 @@ import React from 'react';
 import { Layout, Text } from '@ui-kitten/components';
 import * as styles from '../shared/styles'
 
-const ScreenMessages = () => {
+const ScreenConversations = () => {
   return (
     <Layout style={styles.center}>
-      <Text>Messages Screen!</Text>
+      <Text>conversations Screen!</Text>
     </Layout>
   );
 }
 
-export default ScreenMessages;
+export default ScreenConversations;
