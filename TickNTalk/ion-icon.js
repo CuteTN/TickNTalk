@@ -20,8 +20,8 @@ const IconProvider = (name) => ({
 });
 
 function Ionicon({ name, style }) {
-  const {...iconStyle } = StyleSheet.flatten(style);
+  const {height, tintColor, ...iconStyle } = StyleSheet.flatten(style);
   return (
-    <Icon name={name} style={iconStyle}/>
+    <Icon name={name} size={height} color={tintColor} style={iconStyle}/>
   );
 }

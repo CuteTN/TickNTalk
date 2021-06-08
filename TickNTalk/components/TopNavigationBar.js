@@ -1,21 +1,34 @@
-import React from 'react';
-import { Icon, Text, TopNavigation, TopNavigationAction } from '@ui-kitten/components';
+import React from "react";
+import {
+  Layout,
+  Text,
+  TopNavigation,
+  TopNavigationAction,
+  Divider,
+} from "@ui-kitten/components";
 import { useNavigation } from "@react-navigation/native";
+import * as Icon from "./Icon";
 
-//const navigation = useNavigation();
 
-const BackIcon = (props) => (
-  <Icon {...props} name='arrow-back' pack='ionicon'/>
-);
+const BackAction = () => {
+  const navigation = useNavigation();
+  return (
+    <TopNavigationAction
+      icon={Icon.Back}
+      onPress={() => {
+        navigation.goBack();
+      }}
+    />
+  );
+};
 
-const BackAction = () => (
-  null
-  // <TopNavigationAction icon={BackIcon} onPress={() => {navigation.goBack()}}/>
-);
-
-export default TopNavigationBar = (title) => (
-  <TopNavigation
-    accessoryLeft={BackAction}
-    title={title}
-  />
+export const TopNavigationBar = (props) => (
+  <Layout>
+    <TopNavigation
+      style = {[{marginTop: 16}, props.style]}
+      accessoryLeft={BackAction}
+      title={(evaProps) => <Text style={{fontWeight:'bold'}}>{props.title}</Text>}
+    />
+    <Divider />
+  </Layout>
 );

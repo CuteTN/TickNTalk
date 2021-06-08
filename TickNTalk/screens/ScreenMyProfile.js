@@ -51,15 +51,15 @@ const ScreenMyProfile = () => {
         source={require("../assets/bg.png")}
         style={{ flex: 1, resizeMode: "cover" }}
       >
-        <SafeAreaView style={{ flex: 1, opacity: 0.95 }}>
-          {/* <TopNavigationBar title='About me'/> */}
-          <Layout>
-            <ScrollView>
-              <Layout style={[styles.center]}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: 'transparent', marginBottom: 16}}>
+          <TopNavigationBar title='About me' navigation = {navigation}/>
+          <Layout style={{backgroundColor: 'transparent'}}>
+            <ScrollView style={{backgroundColor: 'transparent'}}>
+              <Layout style={[styles.center], {backgroundColor: 'rgba(255,255,255,0.8)'}}>
                 <Avatar
                   style={[
                     Styles.overall,
-                    { height: 192, width: 192, marginTop: 64 },
+                    { height: 192, width: 192, marginTop: 16, alignSelf:'center' },
                   ]}
                   size="large"
                   shape="round"
