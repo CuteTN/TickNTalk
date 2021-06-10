@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { shallowEqual, useSelector } from 'react-redux';
 import Fire from '../firebase/Fire';
 import { emailToKey } from '../Utils/emailKeyConvert';
 

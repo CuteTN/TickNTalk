@@ -8,6 +8,7 @@ import { ImageBackground, SafeAreaView } from "react-native";
 import { SCREENS } from '.';
 import { validateEmail } from '../Utils/FieldsValidating';
 import { showMessage } from 'react-native-flash-message';
+import { navigateAndReset } from '../Utils/navigation';
 
 const ScreenSignUp = () => {
   /** @typedef {{email:string, password:string, passwordConfirm:string}} inputType */
@@ -32,8 +33,8 @@ const ScreenSignUp = () => {
     Fire.signUpWithEmail(email, password).then(
       ({ successful, errorMessage }) => {
         if (successful) {
-          navigation.navigate(SCREENS.master.name);
-          showMessage({ type: 'success', message: `Sign up with email ${email} successfully!` })
+          navigateAndReset(SCREENS.master.name);
+          showMessage({ type: 'success', message: `Sign up with email ${email} successfully!` });
         }
         if (errorMessage) {
           showMessage({ type: 'danger', message: errorMessage.message });

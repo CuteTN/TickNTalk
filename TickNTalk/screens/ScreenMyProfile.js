@@ -1,21 +1,28 @@
 import { useNavigation } from '@react-navigation/native';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Layout, Text, Button } from '@ui-kitten/components';
 import { useSignedIn } from '../hooks/useSignedIn';
 import Fire from '../firebase/Fire';
 import * as styles from '../shared/styles'
 import { SCREENS } from '.';
+import { useRealtimeFire } from '../hooks/useRealtimeFire';
+import { navigateAndReset } from '../Utils/navigation';
 
 const ScreenMyProfile = () => {
   const navigation = useNavigation();
-  const { user, updateUser } = useSignedIn();
+  const { user } = useSignedIn();
+  const [users,] = useRealtimeFire("user");
+
+  useEffect(() => {
+    // console.log(users);
+  }, [users])
 
   const handleSignOutPress = () => {
     Fire.signOut().then(
       ({ successful, errorMessage }) => {
         if (successful) {
+          navigateAndReset(navigation, SCREENS.signIn.name);
           showMessage({ type: 'success', message: `Sign out successfully!` })
-          navigation.navigate(SCREENS.signIn.name);
         }
         if (errorMessage) {
           showMessage({ type: 'danger', message: errorMessage.message });

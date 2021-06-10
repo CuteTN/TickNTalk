@@ -4,6 +4,7 @@ import { useRef } from 'react';
 import { Text, View } from 'react-native'
 import { SCREENS } from '.';
 import { useSignedIn } from '../hooks/useSignedIn';
+import { navigateAndReset } from '../Utils/navigation';
 
 const ScreenStartUp = () => {
   const navigation = useNavigation();
@@ -12,10 +13,10 @@ const ScreenStartUp = () => {
   useEffect(() => {
     switch (status) {
       case "SignedIn":
-        navigation.navigate(SCREENS.master.name);
+        navigateAndReset(navigation, SCREENS.master.name);
         break;
       case "NotSignedIn":
-        navigation.navigate(SCREENS.signIn.name);
+        navigateAndReset(navigation, SCREENS.signIn.name);
         break;
     }
   }, [status])
