@@ -50,6 +50,9 @@ const ScreenMyProfile = () => {
       }
     )
   }
+  const handleUpdateAvatarPress = () => {
+    navigation.navigate(SCREENS.editUserAva.name);
+  }
 
   const rowStyle = {
     ...Styles.overall,
@@ -159,6 +162,17 @@ const ScreenMyProfile = () => {
                 <Text category="c1"> {JSON.stringify(user)} </Text>
               </Layout>
             </ScrollView>
+          </Layout>
+
+          <Layout style={styles.center}>
+            <Text>MyProfile Screen!</Text>
+            <Text>You've signed in with email {JSON.stringify(user)}</Text>
+
+            {/* thêm phần thay avatar, sẽ nhấn vào cái hình avatar để thay ava*/}
+            <Button onPress={handleUpdateAvatarPress}>Thay ava</Button>
+
+
+            <Button onPress={handleSignOutPress}>Sign out</Button>
           </Layout>
         </SafeAreaView>
       </ImageBackground>
