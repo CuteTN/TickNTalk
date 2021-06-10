@@ -6,6 +6,7 @@ import ScreenSignIn from './ScreenSignIn'
 import ScreenSignUp from './ScreenSignUp'
 import ScreenStartUp from './ScreenStartUp'
 import ScreenEditUserAva from './ScreenEditUserAva'
+import ScreenMessage from './ScreenMessage'
 // [ADD NEW SCREEN]
 
 export const MASTER_TAB_SCREENS = {
@@ -56,5 +57,9 @@ export const SCREENS = {
     screen: ScreenEditUserAva,
   },
 
+  message:{
+    name:"Message",
+    screen: ScreenMessage,
+  },
   ...MASTER_TAB_SCREENS,
 }

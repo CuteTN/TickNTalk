@@ -1,11 +1,23 @@
 import React from "react";
 import { Layout, Text } from "@ui-kitten/components";
 import * as styles from "../shared/styles";
-import { Image, ScrollView, ImageBackground, SafeAreaView } from "react-native";
+import {
+  Image,
+  ScrollView,
+  ImageBackground,
+  SafeAreaView,
+  TouchableOpacity,
+} from "react-native";
 import { SearchBar } from "react-native-elements";
-import {MessageCard} from '../components/index'
+import { MessageCard } from "../components/index";
+import { useNavigation } from "@react-navigation/native";
+import { SCREENS } from '.';
 
 const ScreenConversations = () => {
+  const navigation = useNavigation();
+  const handleMessagePress = () => {
+    navigation.navigate(SCREENS.message.name);
+  };
   return (
     <Layout style={{ flex: 1 }}>
       <ImageBackground
@@ -39,11 +51,13 @@ const ScreenConversations = () => {
                   // value={this.state.toSearchText}
                 />
                 {/*  Binding message list */}
-                <MessageCard
-                  Name="Chó"
-                  LastestChat="aaa"
-                  ImageSource="../assets/bg.png"
-                />
+                <TouchableOpacity onPress={handleMessagePress}>
+                  <MessageCard
+                    Name="Chó"
+                    LastestChat="aaa"
+                    ImageSource="../assets/bg.png"
+                  />
+                </TouchableOpacity>
               </Layout>
             </ScrollView>
           </Layout>
