@@ -34,7 +34,7 @@ export default ScreenSignIn = () => {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <Layout style={{ flex: 1 }}>
       <ImageBackground source={require('../assets/bg.png')}
         style={{ flex: 1, resizeMode: "cover" }}
       >
@@ -77,6 +77,6 @@ export default ScreenSignIn = () => {
         </Layout>
 
       </ImageBackground>
-    </SafeAreaView>
+    </Layout>
   );
 };

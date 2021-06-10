@@ -1,9 +1,9 @@
 import React from 'react';
 import { StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 export const IoniconPack = {
-  name: 'ionicons',
+  name: 'ionicon',
   icons: createIconsMap(),
 };
 
@@ -16,12 +16,12 @@ function createIconsMap() {
 }
 
 const IconProvider = (name) => ({
-  toReactElement: (props) => GetIcon({ name, ...props }),
+  toReactElement: (props) => Ionicon({ name, ...props }),
 });
 
-function GetIcon({ name, style }) {
-  const { height, tintColor, ...iconStyle } = StyleSheet.flatten(style);
+function Ionicon({ name, style }) {
+  const {height, tintColor, ...iconStyle } = StyleSheet.flatten(style);
   return (
-    <Ionicons name={name} size={height} color={tintColor} style={iconStyle} />
+    <Icon name={name} size={height} color={tintColor} style={iconStyle}/>
   );
 }

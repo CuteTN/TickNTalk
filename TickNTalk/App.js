@@ -17,8 +17,9 @@ import { createStackNavigator } from '@react-navigation/stack'
 import * as eva from '@eva-design/eva';
 import { ApplicationProvider, IconRegistry, Layout, Text } from '@ui-kitten/components';
 import { default as theme } from './theme.json';
-import { IoniconPack } from './vector-icons';
+import { IoniconPack } from './ion-icon';
 import { SCREENS } from './screens';
+import { EvaIconsPack } from '@ui-kitten/eva-icons';
 
 import FlashMessage from "react-native-flash-message";
 
@@ -33,7 +34,7 @@ const Stack = createStackNavigator()
 export default function App() {
   return (
     <>
-      <IconRegistry icons={IoniconPack} />
+      <IconRegistry icons={[EvaIconsPack, IoniconPack]} />
       <ApplicationProvider {...eva} theme={{ ...eva.light, ...theme }}>
         <Provider store={reduxStore}>
           <Layout style={styles.container}>
