@@ -1,5 +1,5 @@
 import { useNavigation } from "@react-navigation/native";
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Layout,
   Text,
@@ -27,15 +27,25 @@ import {
 import { TopNavigationBar } from "../components/TopNavigationBar";
 import { useRealtimeFire } from '../hooks/useRealtimeFire';
 import { navigateAndReset } from '../Utils/navigation';
+import { showMessage } from "react-native-flash-message";
+import { checkEnoughUserInfo } from "../Utils/FieldsValidating";
 
 const ScreenMyProfile = () => {
   const navigation = useNavigation();
-  const { user } = useSignedIn();
-  const [users,] = useRealtimeFire("user");
+  const { user, updateUser } = useSignedIn();
+  const [tempUser, setTempUser] = useState(null);
+  const [editingMode, setEditingMode] = useState(false);
 
   useEffect(() => {
-    // console.log(users);
-  }, [users])
+    if (tempUser && editingMode)
+      return;
+
+    setTempUser(user);
+    if (user && !checkEnoughUserInfo(user).isValid)
+      setEditingMode(true);
+  }, [user, editingMode]);
+
+  const isSavable = () => checkEnoughUserInfo(tempUser).isValid;
 
   const handleSignOutPress = () => {
     Fire.signOut().then(
@@ -50,6 +60,7 @@ const ScreenMyProfile = () => {
       }
     )
   }
+
   const handleUpdateAvatarPress = () => {
     navigation.navigate(SCREENS.editUserAva.name);
   }
@@ -59,8 +70,29 @@ const ScreenMyProfile = () => {
     ...Styles.row,
   };
 
+  const handleEditProfilePress = () => {
+    setEditingMode(true);
+  }
+
+  const handleSaveChangesPress = () => {
+    if (isSavable()) {
+      setEditingMode(false);
+      updateUser(tempUser);
+      navigation.navigate(SCREENS.master.name);
+    } else {
+      showMessage({ type: "danger", message: checkEnoughUserInfo(tempUser).message });
+    }
+  }
+
+  const setTempUserFieldFunc = (field) => (value) => {
+    setTempUser(prev => ({ ...prev, [field]: value }))
+
+    if (!editingMode)
+      setEditingMode(true);
+  }
+
   const displayPhoneNumber = (number) => (
-    `${number.substring(0, 3)} ${number.substring(3, 6)} ${number.substring(6, 10)}`
+    `${number.substring(0, 3)} ${number.substring(3, 6)} ${number.substring(6, 10)}`.trim()
   );
 
 
@@ -88,7 +120,7 @@ const ScreenMyProfile = () => {
                 <Input
                   style={Styles.overall}
                   label={"Email"}
-                  value={"thythythythy@gmail.com"}
+                  value={tempUser?.email}
                   editable={false}
                 />
 
@@ -96,15 +128,15 @@ const ScreenMyProfile = () => {
                   <Input
                     style={{ flex: 3, paddingRight: 4 }}
                     label={"First name"}
-                    value={"Thy Thy"}
-                    editable={false}
+                    value={tempUser?.firstName}
+                    onChangeText={setTempUserFieldFunc("firstName")}
                   />
 
                   <Input
                     style={{ flex: 2, paddingLeft: 4 }}
                     label={"Last name"}
-                    value={"Thy Thy"}
-                    editable={false}
+                    value={tempUser?.lastName}
+                    onChangeText={setTempUserFieldFunc("lastName")}
                   />
                 </Layout>
 
@@ -113,16 +145,17 @@ const ScreenMyProfile = () => {
                     min={new Date(1900, 1, 1)}
                     max={new Date(Date.now())}
                     style={{ flex: 3, paddingRight: 4 }}
-                    label={"Birth date"}
-                    value={new Date(Date.now())}
-                    editable={false}
+                    label={"Birthday"}
+                    placeholder={"Birthday"}
+                    date={tempUser?.birthday ? new Date(tempUser?.birthday) : null} // edit later :)
+                    onSelect={setTempUserFieldFunc("birthday")}
                   />
 
                   <Input
                     style={{ flex: 2, paddingLeft: 4 }}
                     label={"Gender"}
-                    value={"Femàle"}
-                    editable={false}
+                    value={tempUser?.gender}
+                    onChangeText={setTempUserFieldFunc("gender")}
                   ></Input>
                 </Layout>
 
@@ -130,49 +163,49 @@ const ScreenMyProfile = () => {
                   <Input
                     style={{ flex: 1 }}
                     label={"Country"}
-                    value={"Thy Thy"}
-                    editable={false}
+                    value={tempUser?.country}
+                    onChangeText={setTempUserFieldFunc("country")}
                   />
                 </Layout>
 
                 <Input
                   style={Styles.overall}
                   label={"Phone number"}
-                  value={displayPhoneNumber("0123456789")}
-                  editable={false}
+                  keyboardType={"phone-pad"}
+                  value={editingMode ? tempUser?.phoneNumber : displayPhoneNumber(tempUser?.phoneNumber ?? "")}
+                  onChangeText={(text) => setTempUserFieldFunc("phoneNumber")(text.replace(" ", ""))}
                 />
+
+                {!editingMode ?
+                  <Button
+                    appearance="outline"
+                    style={[Styles.overall, Styles.button, { width: "auto" }]}
+                    onPress={handleEditProfilePress}
+                  >
+                    EDIT YOUR PROFILE
+                  </Button>
+                  :
+                  <Button
+                    appearance="outline"
+                    style={[Styles.overall, Styles.button, { width: "auto" }]}
+                    onPress={handleSaveChangesPress}
+                  >
+                    SAVE CHANGES
+                  </Button>
+                }
 
                 <Button
                   appearance="outline"
                   style={[Styles.overall, Styles.button, { width: "auto" }]}
                   onPress={handleSignOutPress}
                 >
-                  EDIT YOUR PROFILE
-                </Button>
-
-                <Divider style={{ marginTop: 64 }} />
-                <Text> Change account ? </Text>
-                <Button style={[Styles.overall, Styles.button]}
-                  onPress={handleSignOutPress}
-                >
                   SIGN OUT
                 </Button>
 
-                <Text category="c1"> You've signed in with email </Text>
-                <Text category="c1"> {JSON.stringify(user)} </Text>
+                <Divider style={{ marginTop: 64 }} />
+
               </Layout>
             </ScrollView>
-          </Layout>
-
-          <Layout style={styles.center}>
-            <Text>MyProfile Screen!</Text>
-            <Text>You've signed in with email {JSON.stringify(user)}</Text>
-
-            {/* thêm phần thay avatar, sẽ nhấn vào cái hình avatar để thay ava*/}
-            <Button onPress={handleUpdateAvatarPress}>Thay ava</Button>
-
-
-            <Button onPress={handleSignOutPress}>Sign out</Button>
           </Layout>
         </SafeAreaView>
       </ImageBackground>

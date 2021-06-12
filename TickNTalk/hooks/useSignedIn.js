@@ -1,24 +1,30 @@
 import React, { useEffect, useState, useRef } from 'react';
 import Fire from '../firebase/Fire';
 import { emailToKey } from '../Utils/emailKeyConvert';
+import { checkEnoughUserInfo } from '../Utils/FieldsValidating';
+
+/** @typedef {"Unknown"|"SignedIn"|"NotSignedIn"|"NoInfo"} StatusType */
 
 /**
  * Get/Set current user info
- * @returns {{user: any, updateUser: (newValue: any) => void, status: "Unknown"|"SignedIn"|"NotSignedIn"}}
+ * @returns {{user: any, updateUser: (newValue: any) => void, status: StatusType}}
  */
 export const useSignedIn = () => {
   // const { email } = useSelector(state => state.reducerSignedIn, shallowEqual);
   const [email, setEmail] = useState(null);
   const [user, setUser] = useState(null);
 
-  /** @type ["Unknown"|"SignedIn"|"NotSignedIn", React.Dispatch<React.SetStateAction<"Unknown"|"SignedIn"|"NotSignedIn">>] */
+  /** @type [StatusType, React.Dispatch<React.SetStateAction<StatusType>>] */
   const [status, setStatus] = useState("Unknown");
 
   // subscribe to auth change
   useEffect(() => {
     const changeUserUnlistener = Fire.auth().onAuthStateChanged(newUser => {
       setEmail(newUser?.email);
-      setStatus(newUser ? "SignedIn" : "NotSignedIn")
+      if (!newUser) {
+        setUser(null);
+        setStatus("NotSignedIn");
+      }
     })
 
     return changeUserUnlistener;
@@ -36,6 +42,12 @@ export const useSignedIn = () => {
       childRef.off("value", updateUserListener);
     }
   }, [email]);
+
+
+  useEffect(() => {
+    if (user)
+      setStatus(checkEnoughUserInfo(user).isValid ? "SignedIn" : "NoInfo");
+  }, user)
 
 
   const updateUser = (newValue) => {

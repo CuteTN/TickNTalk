@@ -15,6 +15,9 @@ const ScreenStartUp = () => {
       case "SignedIn":
         navigateAndReset(navigation, SCREENS.master.name);
         break;
+      case "NoInfo":
+        navigateAndReset(navigation, SCREENS.myProfile.name);
+        break;
       case "NotSignedIn":
         navigateAndReset(navigation, SCREENS.signIn.name);
         break;

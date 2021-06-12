@@ -97,32 +97,24 @@ class Fire {
             errorMessage = error;
         }
 
+        console.log("wth", successful, errorMessage);
         return { successful, errorMessage }
     }
 
     static getRootRef = () => firebase.database().ref()
 
     /// name: name of table from the root
-    /// retouch: arr => arr: apply some change to the array of db before storing it to redux
+    /// retouch: obj => obj: apply some change to the array of db before storing it to redux
     static subscribeReduxRef = (refPath, retouch) => {
         let ref = firebase.database().ref().child(refPath);
         log.logInfo(`Subscribed to Firebase/${refPath}`, false, false)
 
         ref.on("value",
             (snapshot) => {
-                let list = [];
-
-                snapshot.forEach((child) => {
-                    let item = {
-                        _key: child.key,
-                        _value: child.toJSON()
-                    }
-
-                    list.push(item);
-                })
+                let obj = snapshot.toJSON();
 
                 if (retouch && typeof retouch === "function")
-                    list = retouch(list)
+                    obj = retouch(obj)
 
                 // update to redux
                 reduxStore.dispatch(createActionUpdateFirebase(refPath, list));
@@ -133,32 +125,6 @@ class Fire {
     }
 
 
-
-    static signInWithEmail = async (email, password) => {
-        let result = false;
-        email = email.toLowerCase();
-
-        try {
-            await firebase
-                .auth()
-                .signInWithEmailAndPassword(email, password)
-                .then(
-                    (credential) => {
-                        log.logSuccess(`user ${email} signed in successfully`);
-                        result = true;
-                    },
-                    (error) => {
-                        log.logError(`Sign in error: `, false, false);
-                        log.logError(error);
-                    }
-                );
-        } catch (error) {
-            log.logError(`Sign in error: `, false, false);
-            log.logError(error);
-        }
-
-        return result;
-    };
 
     static getRootRef = () => firebase.database().ref();
 

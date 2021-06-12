@@ -13,12 +13,14 @@ export const MASTER_TAB_SCREENS = {
   conversations: {
     name: "Conversations",
     screen: ScreenConversations,
+    title: "Conversations",
   },
 
 
   myProfile: {
     name: "MyProfile",
     screen: ScreenMyProfile,
+    title: "Profile",
   },
 }
 
@@ -52,13 +54,13 @@ export const SCREENS = {
     screen: ScreenEditUserInfo,
   },
 
-  editUserAva:{
+  editUserAva: {
     name: "EditUserAva",
     screen: ScreenEditUserAva,
   },
 
-  message:{
-    name:"Message",
+  message: {
+    name: "Message",
     screen: ScreenMessage,
   },
   ...MASTER_TAB_SCREENS,
