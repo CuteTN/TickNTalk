@@ -9,9 +9,9 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { SearchBar } from "react-native-elements";
-import { MessageCard } from "../components/index";
 import { useNavigation } from "@react-navigation/native";
 import { SCREENS } from '.';
+import { MessageCard } from "../components/MessageCard";
 
 const ScreenConversations = () => {
   const navigation = useNavigation();
@@ -53,9 +53,9 @@ const ScreenConversations = () => {
                 {/*  Binding message list */}
                 <TouchableOpacity onPress={handleMessagePress}>
                   <MessageCard
-                    Name="Chó"
-                    LastestChat="aaa"
-                    ImageSource="../assets/bg.png"
+                    name="Chó"
+                    lastestChat="aaa"
+                    imageSource="../assets/bg.png"
                   />
                 </TouchableOpacity>
               </Layout>

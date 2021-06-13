@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Layout, Text, Button } from "@ui-kitten/components";
 import {
   ImageBackground,
@@ -10,9 +10,9 @@ import {
 import Fire from "../firebase/Fire";
 import { useSignedIn } from "../hooks/useSignedIn";
 import { emailToKey } from "../Utils/emailKeyConvert";
-import { BasicImage } from "../components/index";
 import * as Permissions from "expo-permissions";
 import * as ImagePicker from "expo-image-picker";
+import { BasicImage } from "../components/BasicImage";
 
 const ScreenEditUserAva = () => {
   const { user, updateUser } = useSignedIn();
@@ -142,7 +142,7 @@ const ScreenEditUserAva = () => {
     );
   };
   //#endregion
-  
+
   return (
     <Layout style={{ flex: 1 }}>
       <ImageBackground
@@ -165,9 +165,9 @@ const ScreenEditUserAva = () => {
               onPress={handleAvatarPress}
             >
               <BasicImage
-                Icon={200}
-                Round={100}
-                source={{ uri: avatarLink??user?.avaUrl}}
+                icon={200}
+                borderRadius={100}
+                source={{ uri: avatarLink ?? user?.avaUrl }}
               ></BasicImage>
             </TouchableOpacity>
             <Button onPress={handleDonePress}>DONE</Button>

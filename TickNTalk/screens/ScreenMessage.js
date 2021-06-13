@@ -9,7 +9,6 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { SearchBar } from "react-native-elements";
-import { MessageCard } from "../components/index";
 import { useNavigation } from "@react-navigation/native";
 import { SCREENS } from ".";
 import {
@@ -22,6 +21,7 @@ import {
   MessageImage,
   AccessoryBar,
 } from "react-native-gifted-chat";
+import { MessageCard } from "../components/MessageCard";
 
 const ScreenMessage = () => {
   const navigation = useNavigation();
@@ -148,26 +148,26 @@ const ScreenMessage = () => {
       >
         <SafeAreaView style={{ flex: 1 }}>
           <Layout style={{ flex: 1 }}>
-            <Layout style={[styles.center],{flex: 1}}>
+            <Layout style={[styles.center], { flex: 1 }}>
               <TouchableOpacity onPress={handleInfoPress}>
                 <MessageCard
-                  Name="Tên người dùng này"
-                  LastestChat="Hoạt động lúc nào đó"
-                  ImageSource="../assets/bg.png"
+                  name="Tên người dùng này"
+                  lastestChat="Hoạt động lúc nào đó"
+                  imageSource="../assets/bg.png"
                 />
               </TouchableOpacity>
               <GiftedChat
                 keyboardShouldPersistTaps="handled"
                 renderBubble={renderBubble}
                 //messages={this.state.messages}
-               // onSend={(newMessage) => this.HandlePressSend(newMessage)}
+                // onSend={(newMessage) => this.HandlePressSend(newMessage)}
                 // user={{
                 //   _id: this.props.loggedInEmail.toUpperCase(),
                 //   avatar: this.props.curAva,
                 //   name: this.props.curName,
                 // }}
                 onInputTextChanged={(text) => {
-                  
+
                 }}
                 //text={} current text
                 //showUserAvatar
@@ -177,13 +177,13 @@ const ScreenMessage = () => {
                 //renderFooter={() => this.renderFooter(this.state.listAvaSeen)}
                 renderComposer={renderComposer}
                 renderInputToolbar={renderInputToolbar}
-                //renderSend={this.renderSend}
-                //renderLoading={this.renderLoading}
-                //renderActions={this.renderActions}
-                //renderMessageVideo={this.renderMessageVideo}
-                //renderMessageImage={this.renderMessageImage}
-                //onPressVideo={this.VideoSend}
-                //onPressCamera={this.ImageSend}
+              //renderSend={this.renderSend}
+              //renderLoading={this.renderLoading}
+              //renderActions={this.renderActions}
+              //renderMessageVideo={this.renderMessageVideo}
+              //renderMessageImage={this.renderMessageImage}
+              //onPressVideo={this.VideoSend}
+              //onPressCamera={this.ImageSend}
               />
             </Layout>
           </Layout>
