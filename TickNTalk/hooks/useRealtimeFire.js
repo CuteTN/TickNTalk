@@ -3,7 +3,7 @@ import Fire from "../firebase/Fire";
 
 /**
  * @param {...string} path 
- * @returns {[object, {push: ApiFunction, set: ApiFunction, update: ApiFunction, remove: () => object}]}
+ * @returns {[object, {push: ApiFunction, set: ApiFunction, update: ApiFunction, remove: () => object}]} Returns an array, first element is data, second one is apis
  */
 export const useRealtimeFire = (...path) => {
   const [data, setData] = useState(null)

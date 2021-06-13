@@ -17,10 +17,8 @@ export default ScreenSignIn = () => {
   const handleSignInPress = () => {
     Fire.signInWithEmail(email, password).then(
       ({ successful, errorMessage }) => {
-        console.log("wtf", successful, errorMessage);
         if (successful) {
           // navigation.navigate(SCREENS.master.name);
-          // console.log("heyy");
           navigateAndReset(navigation, SCREENS.master.name);
           showMessage({ type: 'success', message: `Signed in with email ${email}` });
         }

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Layout, Text } from "@ui-kitten/components";
 import * as styles from "../shared/styles";
 import {
@@ -22,15 +22,24 @@ import {
   AccessoryBar,
 } from "react-native-gifted-chat";
 import { MessageCard } from "../components/MessageCard";
+import { useRealtimeFire } from "../hooks/useRealtimeFire";
 
-const ScreenMessage = () => {
+const ScreenMessage = ({ route }) => {
   const navigation = useNavigation();
+  const { conversationId } = route?.params ?? {}
+  const [conversation,] = useRealtimeFire("conversation", conversationId);
+
+  // delete this when you're good
+  useEffect(() => {
+    console.log("TESTING:", conversation);
+  }, [conversation])
+
   const handleInfoPress = () => {
     //navigate tới thông tin nhóm chat, block các thứ
     //navigation.navigate(SCREENS.message.name);
   };
 
-  const renderBubble = (props) => {
+  const renderBubble = ({ route }) => {
     return (
       <Bubble
         {...props}
