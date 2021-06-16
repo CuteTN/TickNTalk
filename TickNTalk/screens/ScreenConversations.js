@@ -9,14 +9,16 @@ import {
 } from "react-native";
 import { SearchBar } from "react-native-elements";
 import { useNavigation } from "@react-navigation/native";
-import { SCREENS } from '.';
+import { SCREENS } from ".";
 import { MessageCard } from "../components/MessageCard";
-import Icon from 'react-native-vector-icons/Ionicons';
+import Icon from "react-native-vector-icons/Ionicons";
 import { useFiredux } from "../hooks/useFiredux";
 
 const ScreenConversations = () => {
   const navigation = useNavigation();
-  const listConversations = Object.entries(useFiredux("conversation") ?? {}).map(c => ({ key: c[0], value: c[1] }))
+  const listConversations = Object.entries(
+    useFiredux("conversation") ?? {}
+  ).map((c) => ({ key: c[0], value: c[1] }));
 
   const handleMessagePress = (conversationId) => {
     navigation.navigate(SCREENS.message.name, { conversationId });
@@ -24,66 +26,86 @@ const ScreenConversations = () => {
 
   const handleCreateConversationPress = () => {
     navigation.navigate(SCREENS.createConversation.name);
-  }
-
+  };
+  const dataToText_LastestMessage = (value) => {
+    if (!value) return "";
+    return `${value?.user.name}: ${value?.text}`;
+  };
+  const dataToText_Time = (value) => {
+    if (!value) return "";
+    let result = new Date(value?.createdAt);
+    return `${result.getHours()}:${result.getMinutes()}`
+  };
   return (
-    <Layout style={{ flex: 1 }}>
-      <ImageBackground
-        source={require("../assets/bg.png")}
-        style={{ flex: 1, resizeMode: "cover" }}
-      >
-        <SafeAreaView style={{ flex: 1 }}>
-          <Layout style={{ flex: 1 }}>
-            <Layout style={[styles.center]}>
-              <Layout style={{ display: "flex", flexDirection: "row", marginTop: 20, alignItems: "center" }}>
-                <SearchBar
-                  platform="ios"
-                  placeholder="Search for conversation"
-                  lightTheme="true"
-                  containerStyle={{
-                    marginHorizontal: 8,
-                    backgroundColor: "transparent",
-                    width: "95%",
-                    flex: 5,
-                  }}
-                  inputContainerStyle={{
-                    backgroundColor: "whitesmoke",
-                    borderRadius: 23,
-                  }}
-                  leftIconContainerStyle={{ marginLeft: 16 }}
-                  inputStyle={{}}
+    <SafeAreaView style={{ flex: 1 }}>
+      <Layout style={{ flex: 1 }}>
+        <ImageBackground
+          source={require("../assets/bg.png")}
+          style={{ flex: 1, resizeMode: "cover" }}
+        >
+          <Layout style={({ flex: 1 }, [styles.center])}>
+            <Layout
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                marginTop: 20,
+                alignItems: "center",
+              }}
+            >
+              <SearchBar
+                platform="ios"
+                placeholder="Search for conversation"
+                lightTheme="true"
+                containerStyle={{
+                  marginHorizontal: 8,
+                  backgroundColor: "transparent",
+                  width: "95%",
+                  flex: 5,
+                }}
+                inputContainerStyle={{
+                  backgroundColor: "whitesmoke",
+                  borderRadius: 23,
+                }}
+                leftIconContainerStyle={{ marginLeft: 16 }}
+                inputStyle={{}}
                 // onChangeText={(Text) => {
                 //   this.setState({ toSearchText: Text });
                 //   this.onChangeSearchText(Text);
                 // }}
                 // value={this.state.toSearchText}
-                />
+              />
 
-                <Icon
-                  name={"add-circle-outline"}
-                  size={50}
-                  style={{ flex: 1 }}
-                  onPress={handleCreateConversationPress}
-                />
-              </Layout>
-              {/*  Binding message list */}
-              <ScrollView>
-                {listConversations.map(conversation =>
-                  <TouchableOpacity onPress={() => { handleMessagePress(conversation.key) }}>
-                    <MessageCard
-                      name={conversation.key}
-                      lastestChat={conversation.key}
-                      imageSource="../assets/bg.png"
-                    />
-                  </TouchableOpacity>
-                )}
-
-              </ScrollView>
+              <Icon
+                name={"add-circle-outline"}
+                size={50}
+                style={{ flex: 1 }}
+                onPress={handleCreateConversationPress}
+              />
             </Layout>
+            {/*  Binding message list */}
+            <ScrollView>
+              {listConversations.map((conversation) => (
+                <TouchableOpacity
+                  onPress={() => {
+                    handleMessagePress(conversation.key);
+                  }}
+                >
+                  <MessageCard
+                    name={conversation.key}
+                    lastestChat={dataToText_LastestMessage(
+                      conversation.value.lastestMessage
+                    )}
+                    time={dataToText_Time(conversation.value.lastestMessage)}
+                    ImageSize={60}
+                    imageSource="https://firebasestorage.googleapis.com/v0/b/tickntalk2.appspot.com/o/Logo.png?alt=media&token=1f67739c-177d-43f6-89e7-3dfefa8f828f"
+                  />
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
           </Layout>
-        </SafeAreaView>
-      </ImageBackground>
-    </Layout>
+        </ImageBackground>
+      </Layout>
+    </SafeAreaView>
   );
 };
 
