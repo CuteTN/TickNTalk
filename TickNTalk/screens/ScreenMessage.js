@@ -38,6 +38,7 @@ import {
   getVoice,
   getPermissions,
 } from "../Utils/uploadPhotoVideo";
+import * as MediaLibrary from "expo-media-library";
 
 const ScreenMessage = ({ route }) => {
   const navigation = useNavigation();
@@ -52,6 +53,8 @@ const ScreenMessage = ({ route }) => {
   const camera = useRef(null);
   const [previewVisible, setPreviewVisible] = useState(false);
   const [capturedImage, setCapturedImage] = useState(null);
+  const [cameraType, setCameraType] = useState(Camera.Constants.Type.back);
+  const [flashMode, setFlashMode] = useState("off");
   // delete this when you're good
   useEffect(() => {
     //console.log(conversation);
@@ -65,10 +68,8 @@ const ScreenMessage = ({ route }) => {
       listMess.forEach((child) => {
         let msg = {
           Id: child.key,
-          SenderEmail: child.SenderEmail,
           Data: child.Data,
         };
-
         if (msg.Data) msgs.push(msg.Data);
       });
     }
@@ -81,7 +82,9 @@ const ScreenMessage = ({ route }) => {
   };
   const HandlePressSend = async (newMessages = [], videoLink, imageLink) => {
     if (newMessages[0] === undefined) return;
+
     let imageName = `Message_${Date.parse(newMessages[0].createdAt)}`;
+
     if (videoLink) {
       let result = await uploadPhotoAndGetLink(videoLink, imageName);
       newMessages[0].video = result;
@@ -90,13 +93,13 @@ const ScreenMessage = ({ route }) => {
       let result = await uploadPhotoAndGetLink(imageLink, imageName);
       newMessages[0].image = result;
     }
+
     let lastestMessage = newMessages[0];
     let messageKey = newMessages[0].createdAt;
     if (!newMessages[0].user.avatar) newMessages[0].user.avatar = "";
     newMessages[0].createdAt = Date.parse(newMessages[0].createdAt);
-    console.log(newMessages[0].text);
+
     Fire.update(`conversation/${conversationId}/listMessages/${messageKey}`, {
-      SenderEmail: user?.email,
       Data: newMessages[0],
     }).then(() => {
       if (lastestMessage.video) {
@@ -221,12 +224,24 @@ const ScreenMessage = ({ route }) => {
     );
   };
 
-  const savePhoto = () => {}
+  const savePhoto = async () => {
+    console.log(capturedImage);
+    await MediaLibrary.saveToLibraryAsync(capturedImage.uri).then(
+      () => {
+        alert("Saved");
+        return;
+      },
+      (error) => {
+        alert("Could not save");
+        return;
+      }
+    );
+  };
   const retakePicture = () => {
-    setCapturedImage(null)
-    setPreviewVisible(false)
+    setCapturedImage(null);
+    setPreviewVisible(false);
     setStartCamera(true);
-  }
+  };
   const CameraPress = async () => {
     let status = await getPermissions();
     if (status !== "granted") {
@@ -245,30 +260,13 @@ const ScreenMessage = ({ route }) => {
     setPreviewVisible(true);
     setCapturedImage(photo);
   };
-  const CameraSend= async()=>{ 
+  const CameraSend = async () => {
     let imageLink = capturedImage.uri;
-    let fakeMessage = {
-      _id: `${Date.parse(new Date())}`,
-      createdAt: new Date(),
-      text: "",
-      user: {
-        _id: `${user.email}`,
-        avatar: `${user.avaUrl}`,
-        name: `${user.firstName} ${user.lastName}`,
-      },
-    };
-    let message = [];
-    message.push(fakeMessage);
+    let videoLink = null;
     setStartCamera(false);
-    await HandlePressSend(message, null, imageLink);
-  }
-  const MediaSend = async () => {
-    // updateText("1 media added");
-    let result = await pickProcess(false);
-    let videoLink = null,
-      imageLink = null;
-    if (result.type === "video") videoLink = result.uri;
-    else if (result.type === "image") imageLink = result.uri;
+    await createFakeMessage(videoLink, imageLink);
+  };
+  const createFakeMessage = async (videoLink, imageLink) => {
     let fakeMessage = {
       _id: `${Date.parse(new Date())}`,
       createdAt: new Date(),
@@ -282,6 +280,15 @@ const ScreenMessage = ({ route }) => {
     let message = [];
     message.push(fakeMessage);
     await HandlePressSend(message, videoLink, imageLink);
+  };
+  const MediaSend = async () => {
+    // updateText("1 media added");
+    let result = await pickProcess(false);
+    let videoLink = null,
+      imageLink = null;
+    if (result.type === "video") videoLink = result.uri;
+    else if (result.type === "image") imageLink = result.uri;
+    await createFakeMessage(videoLink, imageLink);
   };
   const renderMessageImage = (props) => {
     return (
@@ -307,29 +314,70 @@ const ScreenMessage = ({ route }) => {
 
   return startCamera ? (
     previewVisible && capturedImage ? (
-      <CameraPreview photo={capturedImage} savePhoto={savePhoto} retakePicture={retakePicture} sendPhoto={CameraSend}/>
+      <CameraPreview
+        photo={capturedImage}
+        savePhoto={savePhoto}
+        retakePicture={retakePicture}
+        sendPhoto={CameraSend}
+      />
     ) : (
-      <Camera style={{ flex: 1, width: "100%" }} ref={camera}>
+      <Camera
+        style={{ flex: 1, width: "100%",height:"100%" }}
+        ref={camera}
+        type={cameraType}
+        flashMode={flashMode}
+      >
         <Layout
           style={{
-            position: "absolute",
-            bottom: 0,
-            flexDirection: "row",
+            flexDirection: "column",
             flex: 1,
             width: "100%",
             padding: 20,
-            justifyContent: "space-between",
+            justifyContent: "flex-start",
             backgroundColor: "transparent",
           }}
         >
           <Layout
             style={{
-              alignSelf: "center",
+            
+             
+              flexDirection: "row",
               flex: 1,
-              alignItems: "center",
+              width: "100%",
+              padding: 20,
+              justifyContent: "flex-end",
               backgroundColor: "transparent",
             }}
           >
+            <TouchableOpacity
+              onPress={() => {
+                setStartCamera(false);
+              }}
+            >
+            <Ionicons name="close" size={40} color="white"/>
+            </TouchableOpacity>
+          </Layout>
+          <Layout
+            style={{
+              height: "15%",
+              alignItems: "center",
+              backgroundColor: "transparent",
+              flexDirection: "row",
+              justifyContent: "space-around",
+            }}
+          >
+            <TouchableOpacity
+              style={{ width: "10%" }}
+              onPress={() => {
+                if (cameraType === "back") {
+                  setCameraType("front");
+                } else {
+                  setCameraType("back");
+                }
+              }}
+            >
+              <Ionicons name="camera-reverse-outline" size={24} color="white" />
+            </TouchableOpacity>
             <TouchableOpacity
               onPress={takePicture}
               style={{
@@ -340,6 +388,33 @@ const ScreenMessage = ({ route }) => {
                 backgroundColor: "#ffffff",
               }}
             />
+            <TouchableOpacity
+              style={{
+                flexDirection: "column",
+                alignItems: "center",
+                width: "10%",
+              }}
+              onPress={() => {
+                if (flashMode === "on") {
+                  setFlashMode("off");
+                } else if (flashMode === "off") {
+                  setFlashMode("auto");
+                } else if (flashMode === "auto") {
+                  setFlashMode("on");
+                }
+              }}
+            >
+              {flashMode === "off" ? (
+                <Ionicons name="flash-off" size={24} color="white" />
+              ) : (
+                <Ionicons name="flash" size={24} color="white" />
+              )}
+              {flashMode === "auto" ? (
+                <Text fontSize={10} style={{ color: "white" }}>
+                  Auto
+                </Text>
+              ) : null}
+            </TouchableOpacity>
           </Layout>
         </Layout>
       </Camera>
