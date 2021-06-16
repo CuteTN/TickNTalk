@@ -11,7 +11,12 @@ export const getPermissions = async () => {
     return status;
   }
 };
-
+export const getVoice= async ()=>{
+    if (Platform.OS !== "web") {
+    const { status } = await Permissions.askAsync(Permissions.AUDIO_RECORDING);
+    return status;
+  }
+}
 //Lấy ảnh từ thư viện ảnh của thiết bị
 export const pickImage = async (imageOnly) => {
   try {

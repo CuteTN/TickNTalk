@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Layout, Text } from "@ui-kitten/components";
 import * as styles from "../shared/styles";
 import {
@@ -24,21 +24,34 @@ import {
 } from "react-native-gifted-chat";
 import { Video } from "expo-av";
 import { MessageCard } from "../components/MessageCard";
+import { CameraPreview } from "../components/CameraPreview";
 import { useRealtimeFire } from "../hooks/useRealtimeFire";
 import { useSignedIn } from "../hooks/useSignedIn";
 import Fire from "../firebase/Fire";
-//import {Camera} from 'expo-camera'
+import { Camera } from "expo-camera";
+import * as Permissions from "expo-permissions";
 import { sizeFactor, windowWidth } from "../styles/Styles";
 import { Ionicons } from "@expo/vector-icons";
-import { pickProcess, uploadPhotoAndGetLink } from "../Utils/uploadPhotoVideo";
+import {
+  pickProcess,
+  uploadPhotoAndGetLink,
+  getVoice,
+  getPermissions,
+} from "../Utils/uploadPhotoVideo";
 
 const ScreenMessage = ({ route }) => {
   const navigation = useNavigation();
+
   const { user } = useSignedIn();
   const { conversationId } = route?.params ?? {};
   const [messages, updateMessages] = useState([]);
   const [currentMessageText, updateText] = useState("");
   const [conversation] = useRealtimeFire("conversation", conversationId);
+
+  const [startCamera, setStartCamera] = useState(false);
+  const camera = useRef(null);
+  const [previewVisible, setPreviewVisible] = useState(false);
+  const [capturedImage, setCapturedImage] = useState(null);
   // delete this when you're good
   useEffect(() => {
     //console.log(conversation);
@@ -207,9 +220,48 @@ const ScreenMessage = ({ route }) => {
       </Layout>
     );
   };
-  const Camera = () => {
-    updateText("1 media added");
+
+  const savePhoto = () => {}
+  const retakePicture = () => {
+    setCapturedImage(null)
+    setPreviewVisible(false)
+    setStartCamera(true);
+  }
+  const CameraPress = async () => {
+    let status = await getPermissions();
+    if (status !== "granted") {
+      alert("Vui lòng cấp quyền truy cập máy ảnh");
+      return;
+    }
+    let statusVoice = await getVoice();
+    if (statusVoice !== "granted") {
+      alert("Vui lòng cấp quyền truy cập microphone");
+      return;
+    }
+    setStartCamera(true);
   };
+  const takePicture = async () => {
+    let photo = await camera.current.takePictureAsync();
+    setPreviewVisible(true);
+    setCapturedImage(photo);
+  };
+  const CameraSend= async()=>{ 
+    let imageLink = capturedImage.uri;
+    let fakeMessage = {
+      _id: `${Date.parse(new Date())}`,
+      createdAt: new Date(),
+      text: "",
+      user: {
+        _id: `${user.email}`,
+        avatar: `${user.avaUrl}`,
+        name: `${user.firstName} ${user.lastName}`,
+      },
+    };
+    let message = [];
+    message.push(fakeMessage);
+    setStartCamera(false);
+    await HandlePressSend(message, null, imageLink);
+  }
   const MediaSend = async () => {
     // updateText("1 media added");
     let result = await pickProcess(false);
@@ -228,7 +280,6 @@ const ScreenMessage = ({ route }) => {
       },
     };
     let message = [];
-    console.log(fakeMessage);
     message.push(fakeMessage);
     await HandlePressSend(message, videoLink, imageLink);
   };
@@ -253,7 +304,47 @@ const ScreenMessage = ({ route }) => {
       />
     );
   };
-  return (
+
+  return startCamera ? (
+    previewVisible && capturedImage ? (
+      <CameraPreview photo={capturedImage} savePhoto={savePhoto} retakePicture={retakePicture} sendPhoto={CameraSend}/>
+    ) : (
+      <Camera style={{ flex: 1, width: "100%" }} ref={camera}>
+        <Layout
+          style={{
+            position: "absolute",
+            bottom: 0,
+            flexDirection: "row",
+            flex: 1,
+            width: "100%",
+            padding: 20,
+            justifyContent: "space-between",
+            backgroundColor: "transparent",
+          }}
+        >
+          <Layout
+            style={{
+              alignSelf: "center",
+              flex: 1,
+              alignItems: "center",
+              backgroundColor: "transparent",
+            }}
+          >
+            <TouchableOpacity
+              onPress={takePicture}
+              style={{
+                width: 80,
+                height: 80,
+                bottom: 0,
+                borderRadius: 100,
+                backgroundColor: "#ffffff",
+              }}
+            />
+          </Layout>
+        </Layout>
+      </Camera>
+    )
+  ) : (
     <SafeAreaView style={{ flex: 1 }}>
       <Layout style={{ flex: 1 }}>
         <ImageBackground
@@ -295,7 +386,7 @@ const ScreenMessage = ({ route }) => {
                 renderActions={renderActions}
                 renderMessageVideo={renderMessageVideo}
                 renderMessageImage={renderMessageImage}
-                onPressCamera={Camera}
+                onPressCamera={CameraPress}
                 onPressMedia={MediaSend}
               />
             </Layout>

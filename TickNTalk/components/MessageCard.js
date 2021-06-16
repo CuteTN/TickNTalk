@@ -3,7 +3,19 @@ import React from "react";
 import { Layout, Text } from "@ui-kitten/components";
 import { BasicImage } from "./BasicImage";
 
-export const MessageCard = ({containerStyle,onPress,touchable,onLongPress,ImageSize,imageSource,textContainerStyle,time,name,lastestChat,isRead}) => {
+export const MessageCard = ({
+  containerStyle,
+  onPress,
+  touchable,
+  onLongPress,
+  ImageSize,
+  imageSource,
+  textContainerStyle,
+  time,
+  name,
+  lastestChat,
+  isRead,
+}) => {
   return (
     <Layout
       style={[Styles.MessageCard, containerStyle]}
@@ -36,26 +48,28 @@ export const MessageCard = ({containerStyle,onPress,touchable,onLongPress,ImageS
         >
           {name}
         </Text>
-        <Layout style={{flexDirection: "row",justifyContent: "space-between"}}>
-        <Text
-          style={{
-            width: sizeFactor * 14,
-            fontWeight: isRead ? "normal" : "bold",
-          }}
-          numberOfLines={1}
-          ellipsizeMode={"tail"}
+        <Layout
+          style={{ flexDirection: "row", justifyContent: "space-between" }}
         >
-          {lastestChat}
-        </Text>
-        <Text
-          style={{
-            width: sizeFactor * 3,
-            fontWeight: isRead ? "normal" : "bold",
-          }}
-          numberOfLines={1}
-        >
-          {time}
-        </Text>
+          <Text
+            style={{
+              width: sizeFactor * 14,
+              fontWeight: isRead ? "normal" : "bold",
+            }}
+            numberOfLines={1}
+            ellipsizeMode={"tail"}
+          >
+            {lastestChat}
+          </Text>
+          <Text
+            style={{
+              width: sizeFactor * 3,
+              fontWeight: isRead ? "normal" : "bold",
+            }}
+            numberOfLines={1}
+          >
+            {time}
+          </Text>
         </Layout>
       </Layout>
     </Layout>
