@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Layout } from "@ui-kitten/components";
+import { Layout, Button } from "@ui-kitten/components";
 import * as styles from "../shared/styles";
 import { ImageBackground, SafeAreaView, TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
@@ -11,7 +11,7 @@ import {
   Composer,
   MessageImage,
 } from "react-native-gifted-chat";
-import { Video } from "expo-av";
+import { Video, Audio } from "expo-av";
 import { MessageCard } from "../components/MessageCard";
 import { CameraPreview } from "../components/CameraPreview";
 import { useRealtimeFire } from "../hooks/useRealtimeFire";
@@ -29,10 +29,11 @@ import {
 import * as MediaLibrary from "expo-media-library";
 import { Camera } from "expo-camera";
 import { SCREENS } from ".";
+import { BackAction } from "../components/TopNavigationBar";
 
 const ScreenMessage = ({ route }) => {
   const navigation = useNavigation();
-  
+
   //#region  message properties
   const { user } = useSignedIn();
   const { conversationId } = route?.params ?? {};
@@ -50,6 +51,7 @@ const ScreenMessage = ({ route }) => {
   const [cameraType, setCameraType] = useState(Camera.Constants.Type.back);
   const [flashMode, setFlashMode] = useState("off");
   const [isRecording, setRecording] = useState(false);
+  const [isExpanding, setExpand] = useState(false);
   //#endregion
 
   //getAll message of this conversation
@@ -76,23 +78,24 @@ const ScreenMessage = ({ route }) => {
   const handleInfoPress = (conversationId) => {
     //navigate to conversation info, for edit.
     //navigation.navigate(SCREENS.message.name);
-    
-      navigation.navigate(SCREENS.conversationInfo.name, { conversationId });
-    
+
+    navigation.navigate(SCREENS.conversationInfo.name, { conversationId });
   };
   // trigged when press send message, upload to Realtime
   const HandlePressSend = async (newMessages = [], videoLink, imageLink) => {
     if (newMessages[0] === undefined) return;
 
     //#region upload image and video to Storage and then get link for realTime (if available)
-    let imageName = `Message_${Date.parse(newMessages[0].createdAt)}`;
-    if (videoLink) {
-      let result = await uploadPhotoAndGetLink(videoLink, imageName);
-      newMessages[0].video = result;
-    }
-    if (imageLink) {
-      let result = await uploadPhotoAndGetLink(imageLink, imageName);
-      newMessages[0].image = result;
+    if (videoLink || imageLink) {
+      let imageName = `Message_${Date.parse(newMessages[0].createdAt)}`;
+      if (videoLink) {
+        let result = await uploadPhotoAndGetLink(videoLink, imageName);
+        newMessages[0].video = result;
+      }
+      if (imageLink) {
+        let result = await uploadPhotoAndGetLink(imageLink, imageName);
+        newMessages[0].image = result;
+      }
     }
     //#endregion
 
@@ -128,7 +131,7 @@ const ScreenMessage = ({ route }) => {
         {...props}
         wrapperStyle={{
           right: {
-            backgroundColor: "blue",
+            backgroundColor: "lavender",
           },
           left: {
             maxWidth: sizeFactor * 14,
@@ -173,6 +176,9 @@ const ScreenMessage = ({ route }) => {
     return (
       <Composer
         {...props}
+        multiline
+        textInputAutoFocus={false}
+        containerStyle={{ justifyContent: "space-between" }}
         textInputStyle={{ borderRadius: 70 / 3, backgroundColor: "whitesmoke" }}
         placeholder="Aa"
       />
@@ -207,36 +213,18 @@ const ScreenMessage = ({ route }) => {
 
   //extend action: Image, Camera,...
   const renderActions = (props) => {
-    return (
+    return props.isExpanding === false ? (
+      <Button size="tiny" appearance="outline" onPress={props.onPressExpand}>
+        <Ionicons name="add" size={18} color="black" />
+      </Button>
+    ) : (
       <Layout style={{ flexDirection: "row", justifyContent: "space-between" }}>
-        <TouchableOpacity
-          style={{
-            alignItems: "center",
-            flexDirection: "row",
-            justifyContent: "center",
-            //backgroundColor: "red",
-            width: 50,
-            height: 50,
-            borderRadius: 70 / 5,
-          }}
-          onPress={props.onPressCamera}
-        >
+        <Button size="tiny" appearance="outline" onPress={props.onPressCamera}>
           <Ionicons name="camera" size={24} color="black" />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={{
-            alignItems: "center",
-            flexDirection: "row",
-            justifyContent: "center",
-            //backgroundColor: "red",
-            width: 50,
-            height: 50,
-            borderRadius: 70 / 5,
-          }}
-          onPress={props.onPressMedia}
-        >
+        </Button>
+        <Button size="tiny" appearance="outline" onPress={props.onPressMedia}>
           <Ionicons name="image" size={24} color="black" />
-        </TouchableOpacity>
+        </Button>
       </Layout>
     );
   };
@@ -264,7 +252,9 @@ const ScreenMessage = ({ route }) => {
       />
     );
   };
-
+  const renderMessageAudio = (props) => {
+    return <Button />;
+  };
   //imageButton pressed
   const MediaSend = async () => {
     // updateText("1 media added");
@@ -424,29 +414,47 @@ const ScreenMessage = ({ route }) => {
           >
             <Layout style={{ flex: 1 }}>
               <Layout style={([styles.center], { flex: 1 })}>
-                <TouchableOpacity onPress={handleInfoPress}>
+                <Layout
+                  style={{
+                    width: "100%",
+                    backgroundColor: "lavender",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-around",
+                  }}
+                >
+                  <BackAction></BackAction>
                   <MessageCard
-                  onPress={()=>handleInfoPress(conversationId)}
-                    containerStyle={{ backgroundColor: "white" }}
+                    onPress={() => handleInfoPress(conversationId)}
                     name={conversation?.name}
+                    containerStyle={{ width: "60%" }}
                     lastestChat="Hoạt động lúc nào đó"
-                    ImageSize={60}
+                    ImageSize={40}
                     imageSource={conversation?.avaUrl}
                   />
-                </TouchableOpacity>
+                  <Button>
+                    <Ionicons name="call" size={15} color="white" />
+                  </Button>
+                  <Button>
+                    <Ionicons name="videocam" size={15} color="white" />
+                  </Button>
+                </Layout>
+
                 <GiftedChat
                   keyboardShouldPersistTaps="handled"
                   renderBubble={renderBubble}
                   messages={messages}
-                  onSend={(newMessage) =>
-                    HandlePressSend(newMessage, null, null)
-                  }
+                  onSend={(newMessage) => {
+                    HandlePressSend(newMessage, null, null);
+                    setExpand(false);
+                  }}
                   user={{
                     _id: user?.email,
                     avatar: user?.avaUrl,
                     name: `${user?.firstName} ${user?.lastName}`,
                   }}
-                  //onInputTextChanged={(text) => updateText(text)}
+                  alignTop
+                  // onInputTextChanged={()=>setExpand(false)}
                   //text={currentMessageText}
                   //showUserAvatar
                   //showAvatarForEveryMessage
@@ -460,8 +468,14 @@ const ScreenMessage = ({ route }) => {
                   renderActions={renderActions}
                   renderMessageVideo={renderMessageVideo}
                   renderMessageImage={renderMessageImage}
+                  renderMessageAudio={renderMessageAudio}
                   onPressCamera={CameraPress}
                   onPressMedia={MediaSend}
+                  isExpanding={isExpanding}
+                  onPressExpand={() => setExpand(true)}
+                  onInputFocus={() => {
+                    setExpand(false);
+                  }}
                 />
               </Layout>
             </Layout>

@@ -10,7 +10,7 @@ import { useNavigation } from "@react-navigation/native";
 import * as Icon from "./Icon";
 
 
-const BackAction = () => {
+export const BackAction = () => {
   const navigation = useNavigation();
   return (
     <TopNavigationAction

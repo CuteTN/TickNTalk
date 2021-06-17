@@ -36,6 +36,7 @@ export const MessageCard = ({
             paddingLeft: 5,
             flexDirection: "column",
             justifyContent: "space-between",
+            backgroundColor: "transparent",
           },
           textContainerStyle,
         ]}
@@ -50,7 +51,7 @@ export const MessageCard = ({
           {name}
         </Text>
         <Layout
-          style={{ flexDirection: "row", justifyContent: "space-between" }}
+          style={{ flexDirection: "row", justifyContent: "space-between",backgroundColor: "transparent"}}
         >
           <Text
             style={{
