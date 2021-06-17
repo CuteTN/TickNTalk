@@ -28,6 +28,7 @@ import {
 } from "../Utils/uploadPhotoVideo";
 import * as MediaLibrary from "expo-media-library";
 import { Camera } from "expo-camera";
+import { SCREENS } from ".";
 
 const ScreenMessage = ({ route }) => {
   const navigation = useNavigation();
@@ -72,9 +73,12 @@ const ScreenMessage = ({ route }) => {
     updateMessages(msgs);
   };
 
-  const handleInfoPress = () => {
+  const handleInfoPress = (conversationId) => {
     //navigate to conversation info, for edit.
     //navigation.navigate(SCREENS.message.name);
+    
+      navigation.navigate(SCREENS.conversationInfo.name, { conversationId });
+    
   };
   // trigged when press send message, upload to Realtime
   const HandlePressSend = async (newMessages = [], videoLink, imageLink) => {
@@ -422,11 +426,12 @@ const ScreenMessage = ({ route }) => {
               <Layout style={([styles.center], { flex: 1 })}>
                 <TouchableOpacity onPress={handleInfoPress}>
                   <MessageCard
-                    containerStyle={{ backgroundColor: "black" }}
-                    name={conversationId}
+                  onPress={()=>handleInfoPress(conversationId)}
+                    containerStyle={{ backgroundColor: "white" }}
+                    name={conversation?.name}
                     lastestChat="Hoạt động lúc nào đó"
                     ImageSize={60}
-                    imageSource="https://firebasestorage.googleapis.com/v0/b/tickntalk2.appspot.com/o/Logo.png?alt=media&token=1f67739c-177d-43f6-89e7-3dfefa8f828f"
+                    imageSource={conversation?.avaUrl}
                   />
                 </TouchableOpacity>
                 <GiftedChat
@@ -441,8 +446,8 @@ const ScreenMessage = ({ route }) => {
                     avatar: user?.avaUrl,
                     name: `${user?.firstName} ${user?.lastName}`,
                   }}
-                  onInputTextChanged={(text) => updateText(text)}
-                  text={currentMessageText}
+                  //onInputTextChanged={(text) => updateText(text)}
+                  //text={currentMessageText}
                   //showUserAvatar
                   //showAvatarForEveryMessage
                   renderUsernameOnMessage

@@ -4,18 +4,16 @@ import {
   ImageBackground,
   SafeAreaView,
   Alert,
-  Platform,
   TouchableOpacity,
 } from "react-native";
 import Fire from "../firebase/Fire";
 import { useSignedIn } from "../hooks/useSignedIn";
 import { emailToKey } from "../Utils/emailKeyConvert";
-import * as Permissions from "expo-permissions";
-import * as ImagePicker from "expo-image-picker";
+
 import { BasicImage } from "../components/BasicImage";
 import { pickProcess,uploadPhotoAndGetLink } from "../Utils/uploadPhotoVideo";
-import { useNavigation } from "@react-navigation/native";
-import { SCREENS } from '.';
+import { useNavigation } from '@react-navigation/native';
+
 
 const ScreenEditUserAva = () => {
   const navigation = useNavigation();
@@ -44,8 +42,8 @@ const ScreenEditUserAva = () => {
             Alert.alert(
               "Thông báo",
               "Đã cập nhật ảnh đại diện thành công",
-              [{ text: "Đồng ý", style: "cancel" }],
-              { cancelable: true }
+              [{ text: "Đồng ý", style: "cancel" , onPress:()=>{navigation.goBack()}}],
+              { cancelable: false }
             );
           },
           (error) => {

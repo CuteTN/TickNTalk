@@ -34,7 +34,7 @@ const ScreenConversations = () => {
   const dataToText_Time = (value) => {
     if (!value) return "";
     let result = new Date(value?.createdAt);
-    return `${result.getHours()}:${result.getMinutes()}`
+    return `${result.getHours()}:${result.getMinutes()}`;
   };
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -85,21 +85,18 @@ const ScreenConversations = () => {
             {/*  Binding message list */}
             <ScrollView>
               {listConversations.map((conversation) => (
-                <TouchableOpacity
+                <MessageCard
                   onPress={() => {
                     handleMessagePress(conversation.key);
                   }}
-                >
-                  <MessageCard
-                    name={conversation.key}
-                    lastestChat={dataToText_LastestMessage(
-                      conversation.value.lastestMessage
-                    )}
-                    time={dataToText_Time(conversation.value.lastestMessage)}
-                    ImageSize={60}
-                    imageSource="https://firebasestorage.googleapis.com/v0/b/tickntalk2.appspot.com/o/Logo.png?alt=media&token=1f67739c-177d-43f6-89e7-3dfefa8f828f"
-                  />
-                </TouchableOpacity>
+                  name={conversation.value.name}
+                  lastestChat={dataToText_LastestMessage(
+                    conversation.value.lastestMessage
+                  )}
+                  time={dataToText_Time(conversation.value.lastestMessage)}
+                  ImageSize={60}
+                  imageSource={conversation.value.avaUrl??"https://firebasestorage.googleapis.com/v0/b/tickntalk2.appspot.com/o/Logo.png?alt=media&token=1f67739c-177d-43f6-89e7-3dfefa8f828f"}
+                />
               ))}
             </ScrollView>
           </Layout>

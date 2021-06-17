@@ -2,6 +2,7 @@ import { Styles, sizeFactor } from "../styles/Styles";
 import React from "react";
 import { Layout, Text } from "@ui-kitten/components";
 import { BasicImage } from "./BasicImage";
+import {TouchableOpacity} from "react-native";
 
 export const MessageCard = ({
   containerStyle,
@@ -17,7 +18,7 @@ export const MessageCard = ({
   isRead,
 }) => {
   return (
-    <Layout
+    <TouchableOpacity
       style={[Styles.MessageCard, containerStyle]}
       onPress={onPress}
       enabled={touchable}
@@ -72,6 +73,6 @@ export const MessageCard = ({
           </Text>
         </Layout>
       </Layout>
-    </Layout>
+    </TouchableOpacity>
   );
 };
