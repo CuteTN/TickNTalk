@@ -1,26 +1,15 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Layout, Text } from "@ui-kitten/components";
+import { Layout } from "@ui-kitten/components";
 import * as styles from "../shared/styles";
-import {
-  Image,
-  ScrollView,
-  ImageBackground,
-  SafeAreaView,
-  Platform,
-  TouchableOpacity,
-} from "react-native";
-import { SearchBar } from "react-native-elements";
+import { ImageBackground, SafeAreaView, TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { SCREENS } from ".";
 import {
   GiftedChat,
   Bubble,
   Send,
   InputToolbar,
   Composer,
-  Actions,
   MessageImage,
-  AccessoryBar,
 } from "react-native-gifted-chat";
 import { Video } from "expo-av";
 import { MessageCard } from "../components/MessageCard";
@@ -28,8 +17,7 @@ import { CameraPreview } from "../components/CameraPreview";
 import { useRealtimeFire } from "../hooks/useRealtimeFire";
 import { useSignedIn } from "../hooks/useSignedIn";
 import Fire from "../firebase/Fire";
-import { Camera } from "expo-camera";
-import * as Permissions from "expo-permissions";
+import { CustomizedCamera } from "../components/CustomizedCamera";
 import { sizeFactor, windowWidth } from "../styles/Styles";
 import { Ionicons } from "@expo/vector-icons";
 import {
@@ -39,28 +27,35 @@ import {
   getPermissions,
 } from "../Utils/uploadPhotoVideo";
 import * as MediaLibrary from "expo-media-library";
+import { Camera } from "expo-camera";
 
 const ScreenMessage = ({ route }) => {
   const navigation = useNavigation();
-
+  
+  //#region  message properties
   const { user } = useSignedIn();
   const { conversationId } = route?.params ?? {};
   const [messages, updateMessages] = useState([]);
   const [currentMessageText, updateText] = useState("");
   const [conversation] = useRealtimeFire("conversation", conversationId);
+  //#region
 
+  //#region  Camera properties
   const [startCamera, setStartCamera] = useState(false);
   const camera = useRef(null);
   const [previewVisible, setPreviewVisible] = useState(false);
   const [capturedImage, setCapturedImage] = useState(null);
+  const [capturedVideo, setCapturedVideo] = useState(null);
   const [cameraType, setCameraType] = useState(Camera.Constants.Type.back);
   const [flashMode, setFlashMode] = useState("off");
-  // delete this when you're good
+  const [isRecording, setRecording] = useState(false);
+  //#endregion
+
+  //getAll message of this conversation
   useEffect(() => {
     //console.log(conversation);
     fecthMessages();
   }, [conversation]);
-
   const fecthMessages = () => {
     let msgs = [];
     if (conversation?.listMessages) {
@@ -76,15 +71,17 @@ const ScreenMessage = ({ route }) => {
     msgs.sort((x, y) => x.createdAt < y.createdAt);
     updateMessages(msgs);
   };
+
   const handleInfoPress = () => {
-    //navigate tới thông tin nhóm chat, block các thứ
+    //navigate to conversation info, for edit.
     //navigation.navigate(SCREENS.message.name);
   };
+  // trigged when press send message, upload to Realtime
   const HandlePressSend = async (newMessages = [], videoLink, imageLink) => {
     if (newMessages[0] === undefined) return;
 
+    //#region upload image and video to Storage and then get link for realTime (if available)
     let imageName = `Message_${Date.parse(newMessages[0].createdAt)}`;
-
     if (videoLink) {
       let result = await uploadPhotoAndGetLink(videoLink, imageName);
       newMessages[0].video = result;
@@ -93,19 +90,23 @@ const ScreenMessage = ({ route }) => {
       let result = await uploadPhotoAndGetLink(imageLink, imageName);
       newMessages[0].image = result;
     }
+    //#endregion
 
-    let lastestMessage = newMessages[0];
+    let lastestMessage = newMessages[0]; //for sorting later
+
     let messageKey = newMessages[0].createdAt;
-    if (!newMessages[0].user.avatar) newMessages[0].user.avatar = "";
+
+    if (!newMessages[0].user.avatar) newMessages[0].user.avatar = ""; //somehow if user doesn't have avatar, message won't be send
+
     newMessages[0].createdAt = Date.parse(newMessages[0].createdAt);
 
     Fire.update(`conversation/${conversationId}/listMessages/${messageKey}`, {
       Data: newMessages[0],
     }).then(() => {
       if (lastestMessage.video) {
-        lastestMessage.text = "Đã gửi video";
+        lastestMessage.text = "Send video";
       } else if (lastestMessage.image) {
-        lastestMessage.text = "Đã gửi ảnh";
+        lastestMessage.text = "Send image";
       }
       Fire.set(
         `conversation/${conversationId}/lastestMessage/`,
@@ -113,6 +114,10 @@ const ScreenMessage = ({ route }) => {
       ).then(() => {});
     });
   };
+
+  //#region Customize GiftedChat
+
+  //Chat bubble
   const renderBubble = (props) => {
     return (
       <Bubble
@@ -134,6 +139,8 @@ const ScreenMessage = ({ route }) => {
       />
     );
   };
+
+  //send button
   const renderSend = (props) => {
     return (
       <Send {...props}>
@@ -156,6 +163,8 @@ const ScreenMessage = ({ route }) => {
   //     </View>
   //   );
   // };
+
+  //text composer
   const renderComposer = (props) => {
     return (
       <Composer
@@ -165,6 +174,8 @@ const ScreenMessage = ({ route }) => {
       />
     );
   };
+
+  //textInput
   const renderInputToolbar = (props) => {
     return (
       <InputToolbar
@@ -189,6 +200,8 @@ const ScreenMessage = ({ route }) => {
       />
     );
   };
+
+  //extend action: Image, Camera,...
   const renderActions = (props) => {
     return (
       <Layout style={{ flexDirection: "row", justifyContent: "space-between" }}>
@@ -224,8 +237,66 @@ const ScreenMessage = ({ route }) => {
     );
   };
 
+  //if message is an image
+  const renderMessageImage = (props) => {
+    return (
+      <MessageImage
+        {...props}
+        source={props.currentMessage.image}
+        imageStyle={{ width: 200, height: 200 }}
+      />
+    );
+  };
+
+  //if message is a video
+  const renderMessageVideo = (props) => {
+    return (
+      <Video
+        resizeMode="contain"
+        useNativeControls
+        shouldPlay={false}
+        source={{ uri: props.currentMessage.video }}
+        style={{ width: 200, height: 300 }}
+      />
+    );
+  };
+
+  //imageButton pressed
+  const MediaSend = async () => {
+    // updateText("1 media added");
+    let result = await pickProcess(false);
+    let videoLink = null,
+      imageLink = null;
+    if (result.type === "video") videoLink = result.uri;
+    else if (result.type === "image") imageLink = result.uri;
+    await createFakeMessage(videoLink, imageLink);
+  };
+  //CameraButton pressed
+  const CameraPress = async () => {
+    let status = await getPermissions();
+    if (status !== "granted") {
+      alert("Please provide camera access");
+      return;
+    }
+    let statusVoice = await getVoice();
+    if (statusVoice !== "granted") {
+      alert("Please provide microphone access");
+      return;
+    }
+    setStartCamera(true);
+  };
+  //#endregion
+
+  //#region  Upload image & video
+
+  //press to take picture
+  const takePicture = async () => {
+    let photo = await camera.current.takePictureAsync();
+    setPreviewVisible(true);
+    setCapturedImage(photo);
+  };
+  //after taking photo, press save to camera_roll
   const savePhoto = async () => {
-    console.log(capturedImage);
     await MediaLibrary.saveToLibraryAsync(capturedImage.uri).then(
       () => {
         alert("Saved");
@@ -237,35 +308,24 @@ const ScreenMessage = ({ route }) => {
       }
     );
   };
+  //after taking photo, press to retake image
   const retakePicture = () => {
     setCapturedImage(null);
     setPreviewVisible(false);
     setStartCamera(true);
   };
-  const CameraPress = async () => {
-    let status = await getPermissions();
-    if (status !== "granted") {
-      alert("Vui lòng cấp quyền truy cập máy ảnh");
-      return;
-    }
-    let statusVoice = await getVoice();
-    if (statusVoice !== "granted") {
-      alert("Vui lòng cấp quyền truy cập microphone");
-      return;
-    }
-    setStartCamera(true);
-  };
-  const takePicture = async () => {
-    let photo = await camera.current.takePictureAsync();
-    setPreviewVisible(true);
-    setCapturedImage(photo);
-  };
+
+  //after taking photo, press to send
   const CameraSend = async () => {
     let imageLink = capturedImage.uri;
     let videoLink = null;
     setStartCamera(false);
+    setPreviewVisible(false);
+    setCapturedImage(null);
     await createFakeMessage(videoLink, imageLink);
   };
+
+  //when press select||send image, auto send and create as a message
   const createFakeMessage = async (videoLink, imageLink) => {
     let fakeMessage = {
       _id: `${Date.parse(new Date())}`,
@@ -281,39 +341,31 @@ const ScreenMessage = ({ route }) => {
     message.push(fakeMessage);
     await HandlePressSend(message, videoLink, imageLink);
   };
-  const MediaSend = async () => {
-    // updateText("1 media added");
-    let result = await pickProcess(false);
-    let videoLink = null,
-      imageLink = null;
-    if (result.type === "video") videoLink = result.uri;
-    else if (result.type === "image") imageLink = result.uri;
-    await createFakeMessage(videoLink, imageLink);
+  //record start
+  const StartRecord = async () => {
+    const { status } = await Camera.getPermissionsAsync();
+    if (status !== "granted") return;
+    setRecording(true);
+    console.log("video");
+    console.log("record", camera);
+    if (camera) {
+      let video = await camera.current.recordAsync({
+        // maxDuration:90,
+      });
+      console.log("video", video);
+      setCapturedVideo(video);
+    }
   };
-  const renderMessageImage = (props) => {
-    return (
-      <MessageImage
-        {...props}
-        source={props.currentMessage.image}
-        imageStyle={{ width: 200, height: 200 }}
-      />
-    );
+  //record stop
+  const StopRecord = async () => {
+    setRecording(false);
+    await camera.current.stopRecording();
+    console.log("stop recording");
+    console.log("video captured", capturedVideo);
   };
-
-  const renderMessageVideo = (props) => {
-    return (
-      <Video
-        resizeMode="contain"
-        useNativeControls
-        shouldPlay={false}
-        source={{ uri: props.currentMessage.video }}
-        style={{ width: 200, height: 300 }}
-      />
-    );
-  };
-
-  return startCamera ? (
-    previewVisible && capturedImage ? (
+  //CameraAndPreview
+  const CameraAndPreview = () => {
+    return previewVisible && capturedImage ? (
       <CameraPreview
         photo={capturedImage}
         savePhoto={savePhoto}
@@ -321,155 +373,101 @@ const ScreenMessage = ({ route }) => {
         sendPhoto={CameraSend}
       />
     ) : (
-      <Camera
-        style={{ flex: 1, width: "100%",height:"100%" }}
-        ref={camera}
-        type={cameraType}
+      <CustomizedCamera
+        style={{ flex: 1, width: "100%", height: "100%" }}
+        camera={camera}
+        cameraType={cameraType}
         flashMode={flashMode}
-      >
-        <Layout
-          style={{
-            flexDirection: "column",
-            flex: 1,
-            width: "100%",
-            padding: 20,
-            justifyContent: "flex-start",
-            backgroundColor: "transparent",
-          }}
-        >
-          <Layout
-            style={{
-            
-             
-              flexDirection: "row",
-              flex: 1,
-              width: "100%",
-              padding: 20,
-              justifyContent: "flex-end",
-              backgroundColor: "transparent",
-            }}
+        setCameraType={() => {
+          if (cameraType === "back") {
+            setCameraType("front");
+          } else {
+            setCameraType("back");
+          }
+        }}
+        setStartCamera={() => {
+          setStartCamera(false);
+          setRecording(false);
+        }}
+        setFlashMode={() => {
+          if (flashMode === "on") {
+            setFlashMode("off");
+          } else if (flashMode === "off") {
+            setFlashMode("auto");
+          } else if (flashMode === "auto") {
+            setFlashMode("on");
+          }
+        }}
+        takePicture={takePicture}
+        StopRecord={StopRecord}
+        recordStart={StartRecord}
+        isRecording={isRecording}
+      />
+    );
+  };
+  //#endregion
+
+  //#region return options
+  const ReturnOptions = () => {
+    return startCamera ? (
+      <CameraAndPreview />
+    ) : (
+      <SafeAreaView style={{ flex: 1 }}>
+        <Layout style={{ flex: 1 }}>
+          <ImageBackground
+            source={require("../assets/bg.png")}
+            style={{ flex: 1, resizeMode: "cover" }}
           >
-            <TouchableOpacity
-              onPress={() => {
-                setStartCamera(false);
-              }}
-            >
-            <Ionicons name="close" size={40} color="white"/>
-            </TouchableOpacity>
-          </Layout>
-          <Layout
-            style={{
-              height: "15%",
-              alignItems: "center",
-              backgroundColor: "transparent",
-              flexDirection: "row",
-              justifyContent: "space-around",
-            }}
-          >
-            <TouchableOpacity
-              style={{ width: "10%" }}
-              onPress={() => {
-                if (cameraType === "back") {
-                  setCameraType("front");
-                } else {
-                  setCameraType("back");
-                }
-              }}
-            >
-              <Ionicons name="camera-reverse-outline" size={24} color="white" />
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={takePicture}
-              style={{
-                width: 80,
-                height: 80,
-                bottom: 0,
-                borderRadius: 100,
-                backgroundColor: "#ffffff",
-              }}
-            />
-            <TouchableOpacity
-              style={{
-                flexDirection: "column",
-                alignItems: "center",
-                width: "10%",
-              }}
-              onPress={() => {
-                if (flashMode === "on") {
-                  setFlashMode("off");
-                } else if (flashMode === "off") {
-                  setFlashMode("auto");
-                } else if (flashMode === "auto") {
-                  setFlashMode("on");
-                }
-              }}
-            >
-              {flashMode === "off" ? (
-                <Ionicons name="flash-off" size={24} color="white" />
-              ) : (
-                <Ionicons name="flash" size={24} color="white" />
-              )}
-              {flashMode === "auto" ? (
-                <Text fontSize={10} style={{ color: "white" }}>
-                  Auto
-                </Text>
-              ) : null}
-            </TouchableOpacity>
-          </Layout>
-        </Layout>
-      </Camera>
-    )
-  ) : (
-    <SafeAreaView style={{ flex: 1 }}>
-      <Layout style={{ flex: 1 }}>
-        <ImageBackground
-          source={require("../assets/bg.png")}
-          style={{ flex: 1, resizeMode: "cover" }}
-        >
-          <Layout style={{ flex: 1 }}>
-            <Layout style={([styles.center], { flex: 1 })}>
-              <TouchableOpacity onPress={handleInfoPress}>
-                <MessageCard
-                  containerStyle={{ backgroundColor: "black" }}
-                  name={conversationId}
-                  lastestChat="Hoạt động lúc nào đó"
-                  ImageSize={60}
-                  imageSource="https://firebasestorage.googleapis.com/v0/b/tickntalk2.appspot.com/o/Logo.png?alt=media&token=1f67739c-177d-43f6-89e7-3dfefa8f828f"
+            <Layout style={{ flex: 1 }}>
+              <Layout style={([styles.center], { flex: 1 })}>
+                <TouchableOpacity onPress={handleInfoPress}>
+                  <MessageCard
+                    containerStyle={{ backgroundColor: "black" }}
+                    name={conversationId}
+                    lastestChat="Hoạt động lúc nào đó"
+                    ImageSize={60}
+                    imageSource="https://firebasestorage.googleapis.com/v0/b/tickntalk2.appspot.com/o/Logo.png?alt=media&token=1f67739c-177d-43f6-89e7-3dfefa8f828f"
+                  />
+                </TouchableOpacity>
+                <GiftedChat
+                  keyboardShouldPersistTaps="handled"
+                  renderBubble={renderBubble}
+                  messages={messages}
+                  onSend={(newMessage) =>
+                    HandlePressSend(newMessage, null, null)
+                  }
+                  user={{
+                    _id: user?.email,
+                    avatar: user?.avaUrl,
+                    name: `${user?.firstName} ${user?.lastName}`,
+                  }}
+                  onInputTextChanged={(text) => updateText(text)}
+                  text={currentMessageText}
+                  //showUserAvatar
+                  //showAvatarForEveryMessage
+                  renderUsernameOnMessage
+                  //isTyping={this.state.isTyping}
+                  //renderFooter={() => this.renderFooter(this.state.listAvaSeen)} có thể dùng để hiện thị danh sách người dùng đã seen
+                  renderComposer={renderComposer}
+                  renderInputToolbar={renderInputToolbar}
+                  renderSend={renderSend}
+                  //renderLoading={this.renderLoading}
+                  renderActions={renderActions}
+                  renderMessageVideo={renderMessageVideo}
+                  renderMessageImage={renderMessageImage}
+                  onPressCamera={CameraPress}
+                  onPressMedia={MediaSend}
                 />
-              </TouchableOpacity>
-              <GiftedChat
-                keyboardShouldPersistTaps="handled"
-                renderBubble={renderBubble}
-                messages={messages}
-                onSend={(newMessage) => HandlePressSend(newMessage, null, null)}
-                user={{
-                  _id: user?.email,
-                  avatar: user?.avaUrl,
-                  name: `${user?.firstName} ${user?.lastName}`,
-                }}
-                onInputTextChanged={(text) => updateText(text)}
-                text={currentMessageText}
-                //showUserAvatar
-                //showAvatarForEveryMessage
-                renderUsernameOnMessage
-                //isTyping={this.state.isTyping}
-                //renderFooter={() => this.renderFooter(this.state.listAvaSeen)} có thể dùng để hiện thị danh sách người dùng đã seen
-                renderComposer={renderComposer}
-                renderInputToolbar={renderInputToolbar}
-                renderSend={renderSend}
-                //renderLoading={this.renderLoading}
-                renderActions={renderActions}
-                renderMessageVideo={renderMessageVideo}
-                renderMessageImage={renderMessageImage}
-                onPressCamera={CameraPress}
-                onPressMedia={MediaSend}
-              />
+              </Layout>
             </Layout>
-          </Layout>
-        </ImageBackground>
-      </Layout>
-    </SafeAreaView>
-  );
+          </ImageBackground>
+        </Layout>
+      </SafeAreaView>
+    );
+  };
+  //#endregion
+
+  return <ReturnOptions />;
 };
 
 export default ScreenMessage;

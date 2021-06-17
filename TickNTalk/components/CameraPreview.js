@@ -1,6 +1,6 @@
 import React from "react";
-import { Layout } from "@ui-kitten/components";
-import { ImageBackground, Text, TouchableOpacity } from "react-native";
+import { Layout ,Text} from "@ui-kitten/components";
+import { ImageBackground, TouchableOpacity } from "react-native";
 
 export const CameraPreview = ({
   photo,
@@ -55,7 +55,7 @@ export const CameraPreview = ({
                   fontSize: 20,
                 }}
               >
-                Chụp lại
+                ReTake
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -74,7 +74,7 @@ export const CameraPreview = ({
                   fontSize: 20,
                 }}
               >
-                Lưu ảnh
+                Save
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -93,7 +93,7 @@ export const CameraPreview = ({
                   fontSize: 20,
                 }}
               >
-                Gửi
+                Send
               </Text>
             </TouchableOpacity>
           </Layout>
