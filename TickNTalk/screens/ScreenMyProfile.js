@@ -101,6 +101,7 @@ const ScreenMyProfile = () => {
       <ImageBackground
         source={require("../assets/bg.png")}
         style={{ flex: 1, resizeMode: "cover" }}
+        imageStyle={{opacity: 0.6}}
       >
         <SafeAreaView
           style={[
@@ -112,10 +113,7 @@ const ScreenMyProfile = () => {
           <Layout style={{ backgroundColor: "transparent" }}>
             <ScrollView style={{ backgroundColor: "transparent" }}>
               <Layout
-                style={
-                  ([styles.center],
-                  { backgroundColor: "rgba(255,255,255,0.8)" })
-                }
+                style={[styles.center], { backgroundColor: "transparent" }}
               >
                 <TouchableOpacity enabled={editingMode} onPress={handleUpdateAvatarPress}>
                   <Avatar

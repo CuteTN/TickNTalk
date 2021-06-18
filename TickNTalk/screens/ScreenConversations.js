@@ -14,6 +14,7 @@ import { MessageCard } from "../components/MessageCard";
 import { useFiredux } from "../hooks/useFiredux";
 import * as Icon from "../components/Icon";
 import { SafeView, Styles } from "../styles/Styles";
+import { TopNavigationBar } from "../components/TopNavigationBar";
 
 const ScreenConversations = () => {
   const navigation = useNavigation();
@@ -39,6 +40,7 @@ const ScreenConversations = () => {
   };
   return (
     <SafeAreaView style={SafeView}>
+      <TopNavigationBar title = "Conversations"/>
       <Layout style={{ flex: 1 }}>
         <ImageBackground
           source={require("../assets/bg.png")}
@@ -75,7 +77,7 @@ const ScreenConversations = () => {
                 // value={this.state.toSearchText}
               />
 
-              <Icon.Add
+              <Icon.AddCircle
                 style={{ width: 48, height: 48 }}
                 onPress={handleCreateConversationPress}
               />

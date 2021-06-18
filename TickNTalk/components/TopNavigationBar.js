@@ -25,9 +25,10 @@ export const BackAction = () => {
 export const TopNavigationBar = (props) => (
   <Layout>
     <TopNavigation
-      style = {props.style}
+      style = {[props.style, {height: 64}]}
       accessoryLeft={BackAction}
-      title={(evaProps) => <Text style={{fontWeight:'bold'}}>{props.title}</Text>}
+      title={(evaProps) => <Text style={{fontWeight:'300'}} category='h6'>{props.title}</Text>}
+      alignment="center"
     />
     <Divider />
   </Layout>

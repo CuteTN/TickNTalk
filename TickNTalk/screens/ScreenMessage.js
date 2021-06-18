@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Layout, Button } from "@ui-kitten/components";
+import { Layout, Button, Divider } from "@ui-kitten/components";
 import * as styles from "../shared/styles";
 import { ImageBackground, SafeAreaView, TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
@@ -30,6 +30,7 @@ import { Camera } from "expo-camera";
 import { SCREENS } from ".";
 import { BackAction } from "../components/TopNavigationBar";
 import { SafeView, Styles } from "../styles/Styles";
+import * as Icon from "../components/Icon";
 
 const ScreenMessage = ({ route }) => {
   const navigation = useNavigation();
@@ -153,12 +154,15 @@ const ScreenMessage = ({ route }) => {
       <Send {...props}>
         <Layout
           style={{
-            justifyContent: "center",
+            flex: 1,
+            margin: 8,
             alignItems: "center",
-            flexDirection: "row",
+            justifyContent: "center",
           }}
         >
-          <Ionicons name="md-send" size={32} color="black" />
+          <Icon.Send
+            style={{ width: 32, height: 32}}
+          />
         </Layout>
       </Send>
     );
@@ -179,8 +183,9 @@ const ScreenMessage = ({ route }) => {
         multiline
         textInputAutoFocus={false}
         containerStyle={{ justifyContent: "space-between" }}
-        textInputStyle={{ borderRadius: 70 / 3, backgroundColor: "whitesmoke" }}
-        placeholder="Aa"
+        textInputStyle={{ borderRadius: 8, backgroundColor: "whitesmoke" }}
+        placeholderTextColor={{ marginHorizontal: 128 }}
+        placeholder="Type your massage here..."
       />
     );
   };
@@ -196,14 +201,14 @@ const ScreenMessage = ({ route }) => {
           alignItems: "center",
           justifyContent: "center",
           //padding:4,
-          height: "auto",
+          height: 64,
           flexDirection: "row",
         }}
         primaryStyle={{
           // borderRadius: 70 / 3,
           // backgroundColor: colors.white,
           alignItems: "center",
-          justifyContent: "space-between",
+          justifyContent: "space-evenly",
           flexDirection: "row",
           // width: sizeFactor * 15,
         }}
@@ -214,16 +219,16 @@ const ScreenMessage = ({ route }) => {
   //extend action: Image, Camera,...
   const renderActions = (props) => {
     return props.isExpanding === false ? (
-      <Button size="tiny" appearance="outline" onPress={props.onPressExpand}>
-        <Ionicons name="add" size={18} color="black" />
+      <Button size="tiny" appearance="ghost" onPress={props.onPressExpand}>
+        <Icon.Add style={{ width: 16, height: 16 }} />
       </Button>
     ) : (
       <Layout style={{ flexDirection: "row", justifyContent: "space-between" }}>
-        <Button size="tiny" appearance="outline" onPress={props.onPressCamera}>
-          <Ionicons name="camera" size={24} color="black" />
+        <Button size="tiny" appearance="ghost" onPress={props.onPressCamera}>
+          <Icon.Camera style={{ width: 24, height: 24 }} />
         </Button>
-        <Button size="tiny" appearance="outline" onPress={props.onPressMedia}>
-          <Ionicons name="image" size={24} color="black" />
+        <Button size="tiny" appearance="ghost" onPress={props.onPressMedia}>
+          <Icon.Image style={{ width: 24, height: 24 }} />
         </Button>
       </Layout>
     );
@@ -406,39 +411,42 @@ const ScreenMessage = ({ route }) => {
     return startCamera ? (
       <CameraAndPreview />
     ) : (
-      <SafeAreaView style={{ flex: 1 }}>
-        <Layout style={{ flex: 1 }}>
-          <ImageBackground
-            source={require("../assets/bg.png")}
-            style={{ flex: 1, resizeMode: "cover" }}
-          >
-              <Layout style={([styles.center], { flex: 1 })}>
-                <Layout
-                  style={{
-                    width: "100%",
-                    backgroundColor: "lavender",
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "space-around",
-                  }}
-                >
-                  <BackAction></BackAction>
-                  <MessageCard
-                    onPress={() => handleInfoPress(conversationId)}
-                    name={conversation?.name}
-                    containerStyle={{ width: "60%" }}
-                    lastestChat="Hoạt động lúc nào đó"
-                    ImageSize={40}
-                    imageSource={conversation?.avaUrl}
-                  />
-                  <Button>
-                    <Ionicons name="call" size={15} color="white" />
-                  </Button>
-                  <Button>
-                    <Ionicons name="videocam" size={15} color="white" />
-                  </Button>
-                </Layout>
+      <Layout style={{ flex: 1 }}>
+        <SafeAreaView style={SafeView}>
+          <Layout style={{ flex: 1 }}>
+            <Layout style={([styles.center], { flex: 1 })}>
+              <Layout
+                style={{
+                  width: "100%",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-around",
+                }}
+              >
+                <BackAction></BackAction>
+                <MessageCard
+                  onPress={() => handleInfoPress(conversationId)}
+                  name={conversation?.name}
+                  containerStyle={{ width: "60%", marginTop: 8 }}
+                  lastestChat="Last seen recently"
+                  ImageSize={48}
+                  imageSource={conversation?.avaUrl}
+                />
+                <Button appearance="ghost">
+                  <Icon.Call style={{ width: 24, height: 24 }} />
+                </Button>
+                <Button appearance="ghost">
+                  <Icon.VideoCam style={{ width: 24, height: 24 }} />
+                </Button>
+              </Layout>
 
+              <Divider />
+
+              <ImageBackground
+                source={require("../assets/bg.png")}
+                style={{ flex: 1, resizeMode: "cover" }}
+                imageStyle={{ opacity: 0.3 }}
+              >
                 <GiftedChat
                   keyboardShouldPersistTaps="handled"
                   renderBubble={renderBubble}
@@ -476,10 +484,11 @@ const ScreenMessage = ({ route }) => {
                     setExpand(false);
                   }}
                 />
-              </Layout>
-          </ImageBackground>
-        </Layout>
-      </SafeAreaView>
+              </ImageBackground>
+            </Layout>
+          </Layout>
+        </SafeAreaView>
+      </Layout>
     );
   };
   //#endregion
