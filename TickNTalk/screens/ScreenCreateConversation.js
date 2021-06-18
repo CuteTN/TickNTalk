@@ -14,6 +14,7 @@ import { emailToKey } from '../Utils/emailKeyConvert';
 import { useNavigation } from '@react-navigation/native';
 import { navigateAndReset } from '../Utils/navigation';
 import { useRealtimeFire } from '../hooks/useRealtimeFire';
+import {SafeView, Styles} from '../styles/Styles';
 
 export default ScreenCreateConversation = () => {
   const { user } = useSignedIn();
@@ -76,7 +77,7 @@ export default ScreenCreateConversation = () => {
 
   return (
     <Layout style={{ flex: 1 }}>
-      <SafeAreaView style={{ flex: 1 }}>
+      <SafeAreaView style={SafeView}>
         <Layout style={{ flex: 1 }}>
           <Layout style={[styles.center]}>
             <Layout style={{ display: "flex", flexDirection: "row", marginTop: 20, alignItems: "center" }}>

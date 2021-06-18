@@ -25,7 +25,7 @@ const BackAction = () => {
 export const TopNavigationBar = (props) => (
   <Layout>
     <TopNavigation
-      style = {[{marginTop: 16}, props.style]}
+      style = {props.style}
       accessoryLeft={BackAction}
       title={(evaProps) => <Text style={{fontWeight:'bold'}}>{props.title}</Text>}
     />

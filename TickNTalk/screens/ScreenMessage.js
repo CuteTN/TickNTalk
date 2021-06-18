@@ -23,16 +23,17 @@ import {
 } from "react-native-gifted-chat";
 import { MessageCard } from "../components/MessageCard";
 import { useRealtimeFire } from "../hooks/useRealtimeFire";
+import {SafeView, Styles} from '../styles/Styles';
 
 const ScreenMessage = ({ route }) => {
   const navigation = useNavigation();
-  const { conversationId } = route?.params ?? {}
-  const [conversation,] = useRealtimeFire("conversation", conversationId);
+  const { conversationId } = route?.params ?? {};
+  const [conversation] = useRealtimeFire("conversation", conversationId);
 
   // delete this when you're good
   useEffect(() => {
     console.log("TESTING:", conversation);
-  }, [conversation])
+  }, [conversation]);
 
   const handleInfoPress = () => {
     //navigate tới thông tin nhóm chat, block các thứ
@@ -150,55 +151,46 @@ const ScreenMessage = ({ route }) => {
     );
   };
   return (
-    <Layout style={{ flex: 1 }}>
-      <ImageBackground
-        source={require("../assets/bg.png")}
-        style={{ flex: 1, resizeMode: "cover" }}
-      >
-        <SafeAreaView style={{ flex: 1 }}>
-          <Layout style={{ flex: 1 }}>
-            <Layout style={[styles.center], { flex: 1 }}>
-              <TouchableOpacity onPress={handleInfoPress}>
-                <MessageCard
-                  name="Tên người dùng này"
-                  lastestChat="Hoạt động lúc nào đó"
-                  imageSource="../assets/bg.png"
-                />
-              </TouchableOpacity>
-              <GiftedChat
-                keyboardShouldPersistTaps="handled"
-                renderBubble={renderBubble}
-                //messages={this.state.messages}
-                // onSend={(newMessage) => this.HandlePressSend(newMessage)}
-                // user={{
-                //   _id: this.props.loggedInEmail.toUpperCase(),
-                //   avatar: this.props.curAva,
-                //   name: this.props.curName,
-                // }}
-                onInputTextChanged={(text) => {
-
-                }}
-                //text={} current text
-                //showUserAvatar
-                //showAvatarForEveryMessage
-                renderUsernameOnMessage
-                //isTyping={this.state.isTyping}
-                //renderFooter={() => this.renderFooter(this.state.listAvaSeen)}
-                renderComposer={renderComposer}
-                renderInputToolbar={renderInputToolbar}
-              //renderSend={this.renderSend}
-              //renderLoading={this.renderLoading}
-              //renderActions={this.renderActions}
-              //renderMessageVideo={this.renderMessageVideo}
-              //renderMessageImage={this.renderMessageImage}
-              //onPressVideo={this.VideoSend}
-              //onPressCamera={this.ImageSend}
-              />
-            </Layout>
-          </Layout>
-        </SafeAreaView>
-      </ImageBackground>
-    </Layout>
+    <SafeAreaView style={SafeView}>
+      <Layout style={{ flex: 1 }}>
+        <Layout style={([styles.center], { flex: 1 })}>
+          <TouchableOpacity onPress={handleInfoPress}>
+            <MessageCard
+              name="Tên người dùng này"
+              lastestChat="Hoạt động lúc nào đó"
+              imageSource="../assets/bg.png"
+            />
+          </TouchableOpacity>
+          <GiftedChat
+            keyboardShouldPersistTaps="handled"
+            renderBubble={renderBubble}
+            //messages={this.state.messages}
+            // onSend={(newMessage) => this.HandlePressSend(newMessage)}
+            // user={{
+            //   _id: this.props.loggedInEmail.toUpperCase(),
+            //   avatar: this.props.curAva,
+            //   name: this.props.curName,
+            // }}
+            onInputTextChanged={(text) => {}}
+            //text={} current text
+            //showUserAvatar
+            //showAvatarForEveryMessage
+            renderUsernameOnMessage
+            //isTyping={this.state.isTyping}
+            //renderFooter={() => this.renderFooter(this.state.listAvaSeen)}
+            renderComposer={renderComposer}
+            renderInputToolbar={renderInputToolbar}
+            //renderSend={this.renderSend}
+            //renderLoading={this.renderLoading}
+            //renderActions={this.renderActions}
+            //renderMessageVideo={this.renderMessageVideo}
+            //renderMessageImage={this.renderMessageImage}
+            //onPressVideo={this.VideoSend}
+            //onPressCamera={this.ImageSend}
+          />
+        </Layout>
+      </Layout>
+    </SafeAreaView>
   );
 };
 

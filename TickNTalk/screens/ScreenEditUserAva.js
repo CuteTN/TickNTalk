@@ -13,6 +13,7 @@ import { emailToKey } from "../Utils/emailKeyConvert";
 import * as Permissions from "expo-permissions";
 import * as ImagePicker from "expo-image-picker";
 import { BasicImage } from "../components/BasicImage";
+import {SafeView, Styles} from '../styles/Styles';
 
 const ScreenEditUserAva = () => {
   const { user, updateUser } = useSignedIn();
@@ -149,7 +150,7 @@ const ScreenEditUserAva = () => {
         source={require("../assets/bg.png")}
         style={{ flex: 1, resizeMode: "cover" }}
       >
-        <SafeAreaView style={{ flex: 1 }}>
+        <SafeAreaView style={SafeView}>
           <Layout style={{ flex: 1, alignItems: "center" }}>
             <TouchableOpacity
               style={{

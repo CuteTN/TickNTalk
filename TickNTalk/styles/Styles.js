@@ -1,5 +1,5 @@
 import { StyleService } from "@ui-kitten/components";
-import {Dimensions} from 'react-native'
+import {Dimensions, StyleSheet, Platform } from 'react-native'
  const windowWidth = Dimensions.get("window").width;
  const windowHeight = Dimensions.get("window").height;
 
@@ -39,4 +39,9 @@ export const Styles = StyleService.create({
         justifyContent: "space-between",
         alignItems: "center",
       },
+});
+
+export const SafeView = StyleService.create({
+    flex: 1,
+    paddingTop: Platform.OS === 'android' ? 24 : 0
 });

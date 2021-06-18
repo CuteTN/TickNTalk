@@ -3,9 +3,9 @@ import React, { useRef, useState } from 'react';
 import { Layout, Text, Button, Input, Avatar, Select, SelectItem, Datepicker, Icon } from '@ui-kitten/components';
 import Fire from '../firebase/Fire';
 import * as styles from '../shared/styles'
-import { Styles } from '../styles/Styles';
 import { ImageBackground, Image, Keyboard, RecyclerViewBackedScrollView, SafeAreaView } from "react-native";
 import { SCREENS } from '.';
+import {SafeView, Styles} from '../styles/Styles';
 
 const ScreenEditUserInfo = () => {
   const [email, setEmail] = useState()
@@ -40,7 +40,7 @@ const ScreenEditUserInfo = () => {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={SafeView}>
       <ImageBackground source={require('../assets/bg.png')}
         style={{ flex: 1, resizeMode: "cover" }}
       >
