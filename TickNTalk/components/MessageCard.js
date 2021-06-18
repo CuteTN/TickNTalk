@@ -2,19 +2,31 @@ import { Styles, sizeFactor } from "../styles/Styles";
 import React from "react";
 import { Layout, Text } from "@ui-kitten/components";
 import { BasicImage } from "./BasicImage";
+import {TouchableOpacity} from "react-native";
 
-export const MessageCard = (props) => {
+export const MessageCard = ({
+  containerStyle,
+  onPress,
+  touchable,
+  onLongPress,
+  ImageSize,
+  imageSource,
+  textContainerStyle,
+  time,
+  name,
+  lastestChat,
+  isRead,
+}) => {
   return (
-    <Layout
-      {...props}
-      style={[Styles.MessageCard, props.containerStyle]}
-      onPress={props.onPress}
-      enabled={props.touchable}
-      onLongPress={props.onLongPress}
+    <TouchableOpacity
+      style={[Styles.MessageCard, containerStyle]}
+      onPress={onPress}
+      enabled={touchable}
+      onLongPress={onLongPress}
     >
       <BasicImage
-        icon={props.ImageSize}
-        source={{ uri: props.imageSource }}
+        icon={ImageSize}
+        source={{ uri: imageSource }}
         borderRadius={100}
       ></BasicImage>
       <Layout
@@ -24,8 +36,9 @@ export const MessageCard = (props) => {
             paddingLeft: 5,
             flexDirection: "column",
             justifyContent: "space-between",
+            backgroundColor: "transparent",
           },
-          props.textContainerStyle,
+          textContainerStyle,
         ]}
       >
         <Text
@@ -35,19 +48,32 @@ export const MessageCard = (props) => {
             color: "black",
           }}
         >
-          {props.name}
+          {name}
         </Text>
-        <Text
-          style={{
-            width: sizeFactor * 19,
-            fontWeight: props.isRead ? "normal" : "bold",
-          }}
-          numberOfLines={1}
-          ellipsizeMode={"tail"}
+        <Layout
+          style={{ flexDirection: "row", justifyContent: "space-between",backgroundColor: "transparent"}}
         >
-          {props.lastestChat}
-        </Text>
+          <Text
+            style={{
+              width: sizeFactor * 14,
+              fontWeight: isRead ? "normal" : "bold",
+            }}
+            numberOfLines={1}
+            ellipsizeMode={"tail"}
+          >
+            {lastestChat}
+          </Text>
+          <Text
+            style={{
+              width: sizeFactor * 3,
+              fontWeight: isRead ? "normal" : "bold",
+            }}
+            numberOfLines={1}
+          >
+            {time}
+          </Text>
+        </Layout>
       </Layout>
-    </Layout>
+    </TouchableOpacity>
   );
 };

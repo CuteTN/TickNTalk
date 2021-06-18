@@ -28,15 +28,23 @@ const ScreenConversations = () => {
   const handleCreateConversationPress = () => {
     navigation.navigate(SCREENS.createConversation.name);
   };
-
+  const dataToText_LastestMessage = (value) => {
+    if (!value) return "";
+    return `${value?.user.name}: ${value?.text}`;
+  };
+  const dataToText_Time = (value) => {
+    if (!value) return "";
+    let result = new Date(value?.createdAt);
+    return `${result.getHours()}:${result.getMinutes()}`;
+  };
   return (
-    <Layout style={{ flex: 1 }}>
-      <ImageBackground
-        source={require("../assets/bg.png")}
-        style={{ flex: 1, resizeMode: "cover" }}
-      >
-        <SafeAreaView style={SafeView}>
-          <Layout style={[styles.center]}>
+    <SafeAreaView style={SafeView}>
+      <Layout style={{ flex: 1 }}>
+        <ImageBackground
+          source={require("../assets/bg.png")}
+          style={{ flex: 1, resizeMode: "cover" }}
+        >
+          <Layout style={({ flex: 1 }, [styles.center])}>
             <Layout
               style={{
                 display: "flex",
@@ -52,7 +60,7 @@ const ScreenConversations = () => {
                   marginHorizontal: 8,
                   backgroundColor: "transparent",
                   width: "95%",
-                  flex: 4,
+                  flex: 5,
                 }}
                 inputContainerStyle={{
                   backgroundColor: "whitesmoke",
@@ -75,23 +83,24 @@ const ScreenConversations = () => {
             {/*  Binding message list */}
             <ScrollView>
               {listConversations.map((conversation) => (
-                <TouchableOpacity
+                <MessageCard
                   onPress={() => {
                     handleMessagePress(conversation.key);
                   }}
-                >
-                  <MessageCard
-                    name={conversation.key}
-                    lastestChat={conversation.key}
-                    imageSource="../assets/bg.png"
-                  />
-                </TouchableOpacity>
+                  name={conversation.value.name}
+                  lastestChat={dataToText_LastestMessage(
+                    conversation.value.lastestMessage
+                  )}
+                  time={dataToText_Time(conversation.value.lastestMessage)}
+                  ImageSize={60}
+                  imageSource={conversation.value.avaUrl??"https://firebasestorage.googleapis.com/v0/b/tickntalk2.appspot.com/o/Logo.png?alt=media&token=1f67739c-177d-43f6-89e7-3dfefa8f828f"}
+                />
               ))}
             </ScrollView>
           </Layout>
-        </SafeAreaView>
-      </ImageBackground>
-    </Layout>
+        </ImageBackground>
+      </Layout>
+    </SafeAreaView>
   );
 };
 

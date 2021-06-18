@@ -7,20 +7,20 @@ import {Dimensions, StyleSheet, Platform } from 'react-native'
 export const sizeFactor = windowWidth / 25.7;
 
 export const Styles = StyleService.create({
-    overall: {
-        marginHorizontal: 16,
-        marginVertical: 8,
-    },
+  overall: {
+    marginHorizontal: 16,
+    marginVertical: 8,
+  },
 
-    button: {
-        width: 128,
-        borderRadius: 8,
-    },
+  button: {
+    width: 128,
+    borderRadius: 8,
+  },
 
-    outerLayout: {
-        marginHorizontal: 16,
-        marginVertical: 16,
-    },
+  outerLayout: {
+    marginHorizontal: 16,
+    marginVertical: 16,
+  },
 
     row: {
         display: "flex",

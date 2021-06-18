@@ -21,6 +21,7 @@ import {
   Image,
   Keyboard,
   RecyclerViewBackedScrollView,
+  TouchableOpacity,
   SafeAreaView,
   ScrollView,
 } from "react-native";
@@ -38,7 +39,6 @@ const ScreenMyProfile = () => {
 
   useEffect(() => {
     if (tempUser && editingMode) return;
-
     setTempUser(user);
     if (user && !checkEnoughUserInfo(user).isValid) setEditingMode(true);
   }, [user, editingMode]);
@@ -58,6 +58,7 @@ const ScreenMyProfile = () => {
   };
 
   const handleUpdateAvatarPress = () => {
+    if (editingMode)
     navigation.navigate(SCREENS.editUserAva.name);
   };
 
@@ -116,21 +117,22 @@ const ScreenMyProfile = () => {
                   { backgroundColor: "rgba(255,255,255,0.8)" })
                 }
               >
-                <Avatar
-                  style={[
-                    Styles.overall,
-                    {
-                      height: 192,
-                      width: 192,
-                      marginTop: 16,
-                      alignSelf: "center",
-                    },
-                  ]}
-                  size="large"
-                  shape="round"
-                  source={require("../assets/user.jpg")}
-                />
-
+                <TouchableOpacity enabled={editingMode} onPress={handleUpdateAvatarPress}>
+                  <Avatar
+                    style={[
+                      Styles.overall,
+                      {
+                        height: 192,
+                        width: 192,
+                        marginTop: 16,
+                        alignSelf: "center",
+                      },
+                    ]}
+                    size="large"
+                    shape="round"
+                    source={{ uri: user?.avaUrl }}
+                  />
+                </TouchableOpacity>
                 <Input
                   style={Styles.overall}
                   label={"Email"}
@@ -213,7 +215,6 @@ const ScreenMyProfile = () => {
                     SAVE CHANGES
                   </Button>
                 )}
-                
 
                 <Divider style={{ marginTop: 64 }} /><Button
                   appearance="ghost"
