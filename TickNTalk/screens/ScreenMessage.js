@@ -7,6 +7,7 @@ import {
   ImageBackground,
   SafeAreaView,
   TouchableOpacity,
+  Platform,
 } from "react-native";
 import { SearchBar } from "react-native-elements";
 import { useNavigation } from "@react-navigation/native";
@@ -23,7 +24,7 @@ import {
 } from "react-native-gifted-chat";
 import { MessageCard } from "../components/MessageCard";
 import { useRealtimeFire } from "../hooks/useRealtimeFire";
-import {SafeView, Styles} from '../styles/Styles';
+import { SafeView, Styles } from "../styles/Styles";
 
 const ScreenMessage = ({ route }) => {
   const navigation = useNavigation();
@@ -42,23 +43,26 @@ const ScreenMessage = ({ route }) => {
 
   const renderBubble = ({ route }) => {
     return (
-      <Bubble
-        {...props}
-        wrapperStyle={{
-          right: {
-            backgroundColor: colors.lightpink,
-          },
-          left: {
-            maxWidth: sizeFactor * 14,
-            backgroundColor: colors.gray5,
-          },
-        }}
-        textStyle={{
-          right: {
-            color: "#fff",
-          },
-        }}
-      />
+      <Layout style={{height: "100%"}}>
+        <Bubble
+          {...props}
+          flex={1}
+          wrapperStyle={{
+            right: {
+              backgroundColor: colors.lightpink,
+            },
+            left: {
+              maxWidth: sizeFactor * 14,
+              backgroundColor: colors.gray5,
+            },
+          }}
+          textStyle={{
+            right: {
+              color: "#fff",
+            },
+          }}
+        />
+      </Layout>
     );
   };
   const renderSend = (props) => {

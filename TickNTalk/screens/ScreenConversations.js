@@ -13,7 +13,7 @@ import { SCREENS } from ".";
 import { MessageCard } from "../components/MessageCard";
 import { useFiredux } from "../hooks/useFiredux";
 import * as Icon from "../components/Icon";
-import {SafeView, Styles} from '../styles/Styles';
+import { SafeView, Styles } from "../styles/Styles";
 
 const ScreenConversations = () => {
   const navigation = useNavigation();
@@ -36,61 +36,58 @@ const ScreenConversations = () => {
         style={{ flex: 1, resizeMode: "cover" }}
       >
         <SafeAreaView style={SafeView}>
-          <Layout style={{ flex: 1 }}>
-            <Layout style={[styles.center]}>
-              <Layout
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  marginTop: 20,
-                  alignItems: "center",
+          <Layout style={[styles.center]}>
+            <Layout
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+              }}
+            >
+              <SearchBar
+                platform="ios"
+                placeholder="Search for conversation"
+                lightTheme="true"
+                containerStyle={{
+                  marginHorizontal: 8,
+                  backgroundColor: "transparent",
+                  width: "95%",
+                  flex: 4,
                 }}
-              >
-                <SearchBar
-                  platform="ios"
-                  placeholder="Search for conversation"
-                  lightTheme="true"
-                  containerStyle={{
-                    marginHorizontal: 8,
-                    backgroundColor: "transparent",
-                    width: "95%",
-                    flex: 4,
-                  }}
-                  inputContainerStyle={{
-                    backgroundColor: "whitesmoke",
-                    borderRadius: 23,
-                  }}
-                  leftIconContainerStyle={{ marginLeft: 16 }}
-                  inputStyle={{}}
-                  // onChangeText={(Text) => {
-                  //   this.setState({ toSearchText: Text });
-                  //   this.onChangeSearchText(Text);
-                  // }}
-                  // value={this.state.toSearchText}
-                />
+                inputContainerStyle={{
+                  backgroundColor: "whitesmoke",
+                  borderRadius: 23,
+                }}
+                leftIconContainerStyle={{ marginLeft: 16 }}
+                inputStyle={{}}
+                // onChangeText={(Text) => {
+                //   this.setState({ toSearchText: Text });
+                //   this.onChangeSearchText(Text);
+                // }}
+                // value={this.state.toSearchText}
+              />
 
-                <Icon.Add
-                  style={{ width: 48, height: 48 }}
-                  onPress={handleCreateConversationPress}
-                />
-              </Layout>
-              {/*  Binding message list */}
-              <ScrollView>
-                {listConversations.map((conversation) => (
-                  <TouchableOpacity
-                    onPress={() => {
-                      handleMessagePress(conversation.key);
-                    }}
-                  >
-                    <MessageCard
-                      name={conversation.key}
-                      lastestChat={conversation.key}
-                      imageSource="../assets/bg.png"
-                    />
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
+              <Icon.Add
+                style={{ width: 48, height: 48 }}
+                onPress={handleCreateConversationPress}
+              />
             </Layout>
+            {/*  Binding message list */}
+            <ScrollView>
+              {listConversations.map((conversation) => (
+                <TouchableOpacity
+                  onPress={() => {
+                    handleMessagePress(conversation.key);
+                  }}
+                >
+                  <MessageCard
+                    name={conversation.key}
+                    lastestChat={conversation.key}
+                    imageSource="../assets/bg.png"
+                  />
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
           </Layout>
         </SafeAreaView>
       </ImageBackground>
