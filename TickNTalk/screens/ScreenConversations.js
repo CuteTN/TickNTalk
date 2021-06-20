@@ -40,7 +40,7 @@ const ScreenConversations = () => {
   };
   return (
     <SafeAreaView style={SafeView}>
-      <TopNavigationBar title = "Conversations"/>
+      <TopNavigationBar title="Conversations" />
       <Layout style={{ flex: 1 }}>
         <ImageBackground
           source={require("../assets/bg.png")}
@@ -76,11 +76,12 @@ const ScreenConversations = () => {
                 // }}
                 // value={this.state.toSearchText}
               />
-
-              <Icon.AddCircle
-                style={{ width: 48, height: 48 }}
-                onPress={handleCreateConversationPress}
-              />
+              <TouchableOpacity onPress={handleCreateConversationPress}>
+                <Icon.AddCircle
+                  style={{ width: 48, height: 48 }}
+                 
+                />
+              </TouchableOpacity>
             </Layout>
             {/*  Binding message list */}
             <ScrollView>
@@ -95,7 +96,10 @@ const ScreenConversations = () => {
                   )}
                   time={dataToText_Time(conversation.value.lastestMessage)}
                   ImageSize={60}
-                  imageSource={conversation.value.avaUrl??"https://firebasestorage.googleapis.com/v0/b/tickntalk2.appspot.com/o/Logo.png?alt=media&token=1f67739c-177d-43f6-89e7-3dfefa8f828f"}
+                  imageSource={
+                    conversation.value.avaUrl ??
+                    "https://firebasestorage.googleapis.com/v0/b/tickntalk2.appspot.com/o/Logo.png?alt=media&token=1f67739c-177d-43f6-89e7-3dfefa8f828f"
+                  }
                 />
               ))}
             </ScrollView>

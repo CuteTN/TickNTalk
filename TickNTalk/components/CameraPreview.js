@@ -1,13 +1,8 @@
 import React from "react";
-import { Layout ,Text} from "@ui-kitten/components";
+import { Layout, Text } from "@ui-kitten/components";
 import { ImageBackground, TouchableOpacity } from "react-native";
 
-export const CameraPreview = ({
-  photo,
-  retakePicture,
-  savePhoto,
-  sendPhoto,
-}) => {
+const CameraPreview = ({ photo, retakePicture, savePhoto, sendPhoto }) => {
   return (
     <Layout
       style={{
@@ -51,7 +46,7 @@ export const CameraPreview = ({
             >
               <Text
                 style={{
-                  color: "#ffffff",
+                  
                   fontSize: 20,
                 }}
               >
@@ -70,7 +65,7 @@ export const CameraPreview = ({
             >
               <Text
                 style={{
-                  color: "#ffffff",
+                  
                   fontSize: 20,
                 }}
               >
@@ -89,7 +84,7 @@ export const CameraPreview = ({
             >
               <Text
                 style={{
-                  color: "#ffffff",
+                
                   fontSize: 20,
                 }}
               >
@@ -102,3 +97,4 @@ export const CameraPreview = ({
     </Layout>
   );
 };
+export default CameraPreview;
