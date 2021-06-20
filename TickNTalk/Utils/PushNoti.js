@@ -14,13 +14,13 @@ export const registerForPushNotificationsAsync = async () => {
       finalStatus = status;
     }
     if (finalStatus !== "granted") {
-      alert("Failed to get push token for push notification!");
+      console.log("Failed to get push token for push notification!");
       return;
     }
     token = (await Notifications.getExpoPushTokenAsync()).data;
     //send token to supplier
   } else {
-    alert("Must use physical device for Push Notifications");
+    console.log("Must use physical device for Push Notifications");
   }
 
   if (Platform.OS === "android") {
@@ -34,23 +34,23 @@ export const registerForPushNotificationsAsync = async () => {
 
   return token;
 };
-export const sendPushNotification = async (expoPushToken, dataParse) =>{
-    const message = {
-      to: expoPushToken,
-      sound: "default",
-      title: dataParse.sender,
-      body: dataParse.message,
-      data: { data: dataParse.data },
-    };
-  
-    await fetch("https://exp.host/--/api/v2/push/send", {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Accept-encoding": "gzip, deflate",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(message),
-    });
-  }
-  
+export const sendPushNotification = async (expoPushToken, dataParse) => {
+  //console.log(expoPushToken);
+  const message = {
+    to: expoPushToken,
+    sound: "default",
+    title: dataParse.sender,
+    body: dataParse.message,
+    data: { data: dataParse.data },
+  };
+
+  await fetch("https://exp.host/--/api/v2/push/send", {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Accept-encoding": "gzip, deflate",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(message),
+  });
+};

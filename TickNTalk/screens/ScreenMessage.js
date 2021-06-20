@@ -34,6 +34,8 @@ import { BackAction } from "../components/TopNavigationBar";
 import { SafeView, Styles } from "../styles/Styles";
 import * as Icon from "../components/Icon";
 import * as Permissions from "expo-permissions";
+import { sendPushNotification } from "../Utils/PushNoti";
+import { emailToKey, keyToToken } from "../Utils/emailKeyConvert";
 
 const ScreenMessage = ({ route }) => {
   const navigation = useNavigation();
@@ -45,7 +47,6 @@ const ScreenMessage = ({ route }) => {
   const [currentMessageText, updateText] = useState("");
   const [conversation] = useRealtimeFire("conversation", conversationId);
   const [justPressSend, setPress] = useState(false);
-
   //#endregion
   //#region audio properties
   //const [isRecording, setIsRecording] = useState(false);
@@ -74,39 +75,64 @@ const ScreenMessage = ({ route }) => {
   }, [conversation]);
 
   const fecthMessages = () => {
-    if (messages.length === 0) {
-      let msgs = [];
-      if (conversation?.listMessages) {
-        let listMess = Object.values(conversation.listMessages);
-        listMess.forEach((child) => {
-          let msg = {
-            Id: child.key,
-            data: child.data,
-          };
-          if (msg.data) msgs.push(msg.data);
-        });
-      }
-      msgs.sort((x, y) => x.createdAt < y.createdAt);
-      updateMessages(msgs);
-      return;
-    } else if (justPressSend) {
-      let data = conversation?.lastestMessage;
-      if (!data) return;
-      // console.log("Chun cute",data.toJSON());
-      if (data.image || data.video || data.audio) data.text = "";
-      let msgs = messages;
-      msgs.push(data);
-      msgs.sort((x, y) => x.createdAt < y.createdAt);
-      updateMessages(msgs);
-      setPress(false);
+    // if (messages.length === 0) {
+    let msgs = [];
+    if (conversation?.listMessages) {
+      let listMess = Object.values(conversation.listMessages);
+      listMess.forEach((child) => {
+        let msg = {
+          Id: child.key,
+          data: child.data,
+        };
+        if (msg.data) msgs.push(msg.data);
+      });
     }
+    msgs.sort((x, y) => x.createdAt < y.createdAt);
+    updateMessages(msgs);
+    return;
+    // } else if (justPressSend) {
+    //   let data = conversation?.lastestMessage;
+    //   if (!data) return;
+    //   console.log("Chun cute",data.toJSON());
+    //   if (data.image || data.video || data.audio) data.text = "";
+    //   let msgs = messages;
+    //   msgs.push(data);
+    //   msgs.sort((x, y) => x.createdAt < y.createdAt);
+    //   updateMessages(msgs);
+    //   setPress(false);
+    // }
   };
+
   const handleInfoPress = (conversationId) => {
     //navigate to conversation info, for edit.
     //navigation.navigate(SCREENS.message.name);
 
     navigation.navigate(SCREENS.conversationInfo.name, { conversationId });
   };
+
+  //send push notification
+  const sendPushNotificationToMembers = async (message) => {
+    let memberList = Object.values(conversation.listMembers);
+    let countMember = memberList.length;
+    memberList.forEach((member) => {
+      if (member !== user.email) {
+        var pushContent = {
+          message: message.text,
+          data: conversationId,
+          sender: user.firstName,
+        };
+        if (countMember > 2) pushContent.sender += " tới " + conversation.name;
+        let membertoKey = emailToKey(`${member}`);
+        Fire.get(`user/${membertoKey}/tokens`).then((userToken) => {
+          Object.keys(userToken.val()).forEach((key) => {
+            sendPushNotification(keyToToken(key), pushContent).then(() => {
+            });
+          });
+        });
+      }
+    });
+  };
+  
   // trigged when press send message, upload to Realtime
   const HandlePressSend = async (
     newMessages = [],
@@ -160,6 +186,7 @@ const ScreenMessage = ({ route }) => {
       `conversation/${conversationId}/lastestMessage/`,
       lastestMessage
     );
+    await sendPushNotificationToMembers(lastestMessage);
   };
 
   //#region Customize GiftedChat
@@ -722,7 +749,7 @@ const ScreenMessage = ({ route }) => {
             //text={currentMessageText}
             //showUserAvatar
             //showAvatarForEveryMessage
-            renderUsernameOnMessage
+            //renderUsernameOnMessage
             //isTyping={this.state.isTyping}
             //renderFooter={() => this.renderFooter(this.state.listAvaSeen)} có thể dùng để hiện thị danh sách người dùng đã seen
             renderComposer={renderComposer}

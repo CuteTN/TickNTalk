@@ -3,6 +3,7 @@ import Fire from "../firebase/Fire";
 import { emailToKey, tokenToKey } from "../Utils/emailKeyConvert";
 import { checkEnoughUserInfo } from "../Utils/FieldsValidating";
 import { registerForPushNotificationsAsync } from "../Utils/PushNoti";
+import * as Notifications from 'expo-notifications'
 /** @typedef {"Unknown"|"SignedIn"|"NotSignedIn"|"NoInfo"} StatusType */
 
 /**
@@ -15,6 +16,8 @@ export const useSignedIn = () => {
   const preEmail = useRef(null);
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
+  const notificationListener = useRef();
+  const responseListener = useRef();
   /** @type [StatusType, React.Dispatch<React.SetStateAction<StatusType>>] */
   const [status, setStatus] = useState("Unknown");
 
@@ -27,7 +30,6 @@ export const useSignedIn = () => {
         setUser(null);
         setStatus("NotSignedIn");
       } else {
-        
       }
     });
 
@@ -37,12 +39,31 @@ export const useSignedIn = () => {
     registerForPushNotificationsAsync().then((token) => {
       setToken(token);
     });
+    notificationListener.current =
+      Notifications.addNotificationReceivedListener((notification) => {});
+
+    // This listener is fired whenever a user taps on or interacts with a notification (works when app is foregrounded, backgrounded, or killed)
+    responseListener.current =
+      Notifications.addNotificationResponseReceivedListener((response) => {});
+
+    return () => {
+      Notifications.removeNotificationSubscription(
+        notificationListener.current
+      );
+      Notifications.removeNotificationSubscription(responseListener.current);
+    };
   }, []);
   useEffect(() => {
     if (token) {
-      console.log(tokenToKey(token))
-      if (email) Fire.update(`user/${emailToKey(email)}/tokens/${tokenToKey(token)}`, {isAvailable:true});
-      else Fire.remove(`user/${emailToKey(preEmail.current)}/tokens/${tokenToKey(token)}`);
+      console.log(tokenToKey(token));
+      if (email)
+        Fire.update(`user/${emailToKey(email)}/tokens/${tokenToKey(token)}`, {
+          isAvailable: true,
+        });
+      else
+        Fire.remove(
+          `user/${emailToKey(preEmail.current)}/tokens/${tokenToKey(token)}`
+        );
     }
   }, [token, email]);
 
