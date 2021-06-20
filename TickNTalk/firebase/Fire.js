@@ -6,12 +6,12 @@ import { firebaseConfig } from "./FirebaseConfig";
 import { validateEmail } from "../Utils/FieldsValidating";
 import { emailToKey } from "../Utils/emailKeyConvert";
 
-
 class Fire {
-  static init = () => {
+  static init = (deviceToken) => {
+    Fire.deviceToken = deviceToken;
     Fire.initApp();
   };
-
+  static deviceToken = null;
   static initApp = () => {
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     else firebase.app();
@@ -26,39 +26,15 @@ class Fire {
   };
 
   static signOut = async () => {
-    let successful = false
-    let errorMessage = undefined;
-
-    await firebase.auth().signOut().then(
-      () => {
-        log.logSuccess(`Signed out successfully`)
-        successful = true
-      },
-      (error) => {
-        console.error(error);
-        errorMessage = error
-      }
-    )
-
-    return { successful, errorMessage };
-  }
-
-  static signUpWithEmail = async (email, password) => {
     let successful = false;
     let errorMessage = undefined;
-    email = email.toLowerCase();
 
-    if (!validateEmail(email))
-      log.logError(`${email} is an invalid email`)
-
-    try {
-      await firebase.auth().createUserWithEmailAndPassword(email, password).then(
-        (credential) => {
-          log.logSuccess(`Created new user with email: ${email}`);
-          Fire.update(`user/${emailToKey(email)}`, {
-            email,
-            displayName: email,
-          })
+    await firebase
+      .auth()
+      .signOut()
+      .then(
+        () => {
+          log.logSuccess(`Signed out successfully`);
           successful = true;
         },
         (error) => {
@@ -66,14 +42,42 @@ class Fire {
           errorMessage = error;
         }
       );
-    }
-    catch (error) {
+
+    return { successful, errorMessage };
+  };
+
+  static signUpWithEmail = async (email, password) => {
+    let successful = false;
+    let errorMessage = undefined;
+    email = email.toLowerCase();
+
+    if (!validateEmail(email)) log.logError(`${email} is an invalid email`);
+
+    try {
+      await firebase
+        .auth()
+        .createUserWithEmailAndPassword(email, password)
+        .then(
+          (credential) => {
+            log.logSuccess(`Created new user with email: ${email}`);
+            Fire.update(`user/${emailToKey(email)}`, {
+              email,
+              displayName: email,
+            });
+            successful = true;
+          },
+          (error) => {
+            console.error(error);
+            errorMessage = error;
+          }
+        );
+    } catch (error) {
       console.error(error);
       errorMessage = error;
     }
 
-    return { successful, errorMessage }
-  }
+    return { successful, errorMessage };
+  };
 
   static signInWithEmail = async (email, password) => {
     let successful = false;
@@ -81,52 +85,55 @@ class Fire {
     email = email.toLowerCase();
 
     try {
-      await firebase.auth().signInWithEmailAndPassword(email, password).then(
-        (credential) => {
-          log.logSuccess(`user ${email} signed in successfully`)
-          successful = true
-        },
-        (error) => {
-          console.error(error);
-          errorMessage = error;
-        }
-      );
-    }
-    catch (error) {
+      await firebase
+        .auth()
+        .signInWithEmailAndPassword(email, password)
+        .then(
+          (credential) => {
+            log.logSuccess(`user ${email} signed in successfully`);
+            successful = true;
+          },
+          (error) => {
+            console.error(error);
+            errorMessage = error;
+          }
+        );
+    } catch (error) {
       console.error(error);
       errorMessage = error;
     }
 
-    return { successful, errorMessage }
-  }
+    return { successful, errorMessage };
+  };
 
-  static getRootRef = () => firebase.database().ref()
+  static getRootRef = () => firebase.database().ref();
 
   /// name: name of table from the root
   /// retouch: obj => obj: apply some change to the array of db before storing it to redux
   static subscribeReduxRef = (refPath, retouch) => {
     let ref = firebase.database().ref().child(refPath);
-    log.logInfo(`Subscribed to Firebase/${refPath}`, false, false)
+    log.logInfo(`Subscribed to Firebase/${refPath}`, false, false);
 
-    ref.on("value",
+    ref.on(
+      "value",
       (snapshot) => {
         let obj = snapshot.toJSON();
 
-        if (retouch && typeof retouch === "function")
-          obj = retouch(obj)
+        if (retouch && typeof retouch === "function") obj = retouch(obj);
 
         // update to redux
         reduxStore.dispatch(createActionUpdateFirebase(refPath, obj));
-        log.logSuccess(`Collection ${refPath} has been retrieved and updated globaly!`)
+        log.logSuccess(
+          `Collection ${refPath} has been retrieved and updated globaly!`
+        );
       },
-      (error) => { log.logError(`Failed to retrieve collection ${refPath}: ${error}`) }
-    )
-  }
-
-
+      (error) => {
+        log.logError(`Failed to retrieve collection ${refPath}: ${error}`);
+      }
+    );
+  };
 
   static getRootRef = () => firebase.database().ref();
-
 
   static unsubscribeReduxRef = (refPath) => {
     let ref = firebase.database().ref().child(refPath);
