@@ -19,29 +19,62 @@ import { useNavigation } from "@react-navigation/native";
 import { navigateAndReset } from "../Utils/navigation";
 import { useRealtimeFire } from "../hooks/useRealtimeFire";
 import { SafeView, Styles } from '../styles/Styles';
+import { matchPointUser } from "../Utils/search";
 
 export default ScreenCreateConversation = () => {
   const { user } = useSignedIn();
   const rawUsers = useFiredux("user");
   const [searchText, setSearchText] = useState("");
 
-  const [selectedUsers, setSelectedUsers] = useState({});
+  // object { userId: boolean }
+  const [selectedUserEmails, setSelectedUserEmails] = useState({});
   const navigation = useNavigation();
 
-  useEffect(() => {
-    // sort search result
-  }, [searchText])
+  // pin selected users to top
+  // sort searched result
+  const [listRenderedUsers, setListRenderedUsers] = useState([]);
 
+  /** list users after making into a list and filtered */
   const listUsers = React.useMemo(() => {
     if (user && rawUsers)
-      return Object.values(rawUsers).filter(
-        (u) => u.email !== user.email && checkEnoughUserInfo(u).isValid
-      )
+      return Object.entries(rawUsers)
+        .map(entry => ({ key: entry[0], value: entry[1], }))
+        .filter(
+          (u) => u.value.email !== user.email && checkEnoughUserInfo(u.value).isValid
+        )
   }, [user, rawUsers]);
 
+  useEffect(() => {
+    if (listUsers && selectedUserEmails) {
+      let newRenderedList = [];
+
+      listUsers.forEach(c => {
+        const matchPoint = matchPointUser(searchText, c.value);
+        const selected = Boolean(selectedUserEmails[c.value?.email])
+
+
+        if (!(searchText && matchPoint <= 0 && !selected))
+          newRenderedList.push({
+            ...c,
+            matchPoint,
+            selected,
+          })
+      });
+
+      newRenderedList.sort((c1, c2) =>
+        c1.selected - c2.selected ?
+          c2.selected - c1.selected
+          :
+          c2.matchPoint - c1.matchPoint
+      );
+
+      setListRenderedUsers(newRenderedList);
+    }
+  }, [searchText, listUsers, selectedUserEmails])
+
   const handleCreateConversationPress = () => {
-    const listMembers = Object.keys(selectedUsers).filter(
-      (uEmail) => selectedUsers[uEmail]
+    const listMembers = Object.keys(selectedUserEmails).filter(
+      (uEmail) => selectedUserEmails[uEmail]
     );
     listMembers.push(user.email);
 
@@ -86,7 +119,7 @@ export default ScreenCreateConversation = () => {
   };
 
   const handleToggleSelectedUser = (email) => {
-    setSelectedUsers((prev) => ({
+    setSelectedUserEmails((prev) => ({
       ...prev,
       [email]: prev[email] ? false : true,
     }));
@@ -135,13 +168,13 @@ export default ScreenCreateConversation = () => {
             </Layout>
             {/*  Binding message list */}
             <ScrollView>
-              {listUsers?.map((user) => (
+              {listRenderedUsers?.map((user) => (
                 <MessageCard
-                  onPress={() => handleToggleSelectedUser(user.email)}
-                  name={`${user.firstName} ${user.lastName}`}
-                  lastestChat={`${user.displayName}`}
-                  imageSource={user.avaUrl ?? "../assets/bg.png"}
-                  isRead={!selectedUsers[user.email]} // highlight selection
+                  onPress={() => handleToggleSelectedUser(user?.value?.email)}
+                  name={`${user?.value?.firstName} ${user?.value?.lastName}`}
+                  lastestChat={`${user?.value?.displayName}`}
+                  imageSource={user?.value?.avaUrl ?? "../assets/bg.png"}
+                  isRead={!user?.selected} // highlight selection
                 />
               ))}
             </ScrollView>

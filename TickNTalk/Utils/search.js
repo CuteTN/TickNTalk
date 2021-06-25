@@ -31,7 +31,7 @@ export const matchPointUser = (text, targetUser) => {
     return -1;
 
   return [
-    targetUser.firstName + targetUser.lastName,
+    targetUser.firstName + " " + targetUser.lastName,
     targetUser.displayName,
     targetUser.email,
     targetUser.phoneNumber,

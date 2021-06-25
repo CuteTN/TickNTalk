@@ -39,7 +39,7 @@ const ScreenConversations = () => {
       listConversations.forEach(c => {
         const matchPoint = matchPointConversation(searchText, c.value, listRawUsers);
 
-        if (matchPoint)
+        if (matchPoint > 0)
           searchResult.push({
             ...c,
             matchPoint
