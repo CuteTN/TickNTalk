@@ -135,7 +135,7 @@ export default ScreenCreateConversation = () => {
             </Layout>
             {/*  Binding message list */}
             <ScrollView>
-              {listUsers.map((user) => (
+              {listUsers?.map((user) => (
                 <MessageCard
                   onPress={() => handleToggleSelectedUser(user.email)}
                   name={`${user.firstName} ${user.lastName}`}

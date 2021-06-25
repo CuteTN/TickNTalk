@@ -32,3 +32,15 @@ export const Call = (props) => (
 export const VideoCam = (props) => (
     <Icon name="videocam" pack="ionicon" {...props}/>
 );
+export const Voice = (props) => (
+    <Icon name="mic" pack="ionicon" {...props}/>
+);
+export const StopVoice = (props) => (
+    <Icon name="stop-circle-outline" pack="ionicon" {...props}/>
+);
+export const Play = (props) => (
+    <Icon name="play" pack="ionicon" {...props}/>
+);
+export const Stop = (props) => (
+    <Icon name="md-stop-circle-outline" pack="ionicon" {...props}/>
+);

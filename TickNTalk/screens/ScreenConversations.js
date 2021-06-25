@@ -103,11 +103,12 @@ const ScreenConversations = () => {
                 value={searchText}
                 onChangeText={setSearchText}
               />
+              <TouchableOpacity onPress={handleCreateConversationPress}>
+                <Icon.AddCircle
+                  style={{ width: 48, height: 48 }}
 
-              <Icon.AddCircle
-                style={{ width: 48, height: 48 }}
-                onPress={handleCreateConversationPress}
-              />
+                />
+              </TouchableOpacity>
             </Layout>
             {/*  Binding message list */}
             <ScrollView>
