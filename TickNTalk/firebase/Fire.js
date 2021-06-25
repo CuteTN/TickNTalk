@@ -139,7 +139,7 @@ class Fire {
     const item = await ref.get().catch((error) => {
       log.logError(`Could not find item from ${refPath}:\nError: ${error}`);
     });
-    return item;
+    return item?.toJSON();
   };
 
   // push a new item to refPath (i.e value would be in child ref of refPath). auto generate new ID.

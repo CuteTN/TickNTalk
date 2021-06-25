@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Layout, Text } from "@ui-kitten/components";
 import * as styles from "../shared/styles";
 import {
@@ -15,12 +15,41 @@ import { useFiredux } from "../hooks/useFiredux";
 import * as Icon from "../components/Icon";
 import { SafeView, Styles } from "../styles/Styles";
 import { TopNavigationBar } from "../components/TopNavigationBar";
+import { matchPointConversation } from "../Utils/search";
 
 const ScreenConversations = () => {
+  const [searchText, setSearchText] = useState("");
+
   const navigation = useNavigation();
-  const listConversations = Object.entries(
-    useFiredux("conversation") ?? {}
-  ).map((c) => ({ key: c[0], value: c[1] }));
+  const listRawConversations = useFiredux("conversation") ?? {};
+  const listRawUsers = useFiredux("user") ?? {};
+
+  const listConversations = React.useMemo(() => {
+    return Object.entries(listRawConversations ?? {})
+      .map((c) => ({ key: c[0], value: c[1] }));
+  }, [listRawConversations])
+
+  // same as list conversation but is sorted to fit search text
+  const [searchedConversations, setSearchedConversations] = useState([]);
+
+  useEffect(() => {
+    if (searchText && listConversations) {
+      let searchResult = [];
+
+      listConversations.forEach(c => {
+        const matchPoint = matchPointConversation(searchText, c.value, listRawUsers);
+
+        if (matchPoint)
+          searchResult.push({
+            ...c,
+            matchPoint
+          })
+      });
+
+      searchResult.sort((c1, c2) => c2.matchPoint - c1.matchPoint);
+      setSearchedConversations(searchResult);
+    }
+  }, [searchText, listConversations])
 
   const handleMessagePress = (conversationId) => {
     navigation.navigate(SCREENS.message.name, { conversationId });
@@ -40,7 +69,7 @@ const ScreenConversations = () => {
   };
   return (
     <SafeAreaView style={SafeView}>
-      <TopNavigationBar title = "Conversations"/>
+      <TopNavigationBar title="Conversations" />
       <Layout style={{ flex: 1 }}>
         <ImageBackground
           source={require("../assets/bg.png")}
@@ -70,11 +99,9 @@ const ScreenConversations = () => {
                 }}
                 leftIconContainerStyle={{ marginLeft: 16 }}
                 inputStyle={{}}
-                // onChangeText={(Text) => {
-                //   this.setState({ toSearchText: Text });
-                //   this.onChangeSearchText(Text);
-                // }}
-                // value={this.state.toSearchText}
+
+                value={searchText}
+                onChangeText={setSearchText}
               />
 
               <Icon.AddCircle
@@ -84,20 +111,22 @@ const ScreenConversations = () => {
             </Layout>
             {/*  Binding message list */}
             <ScrollView>
-              {listConversations.map((conversation) => (
-                <MessageCard
-                  onPress={() => {
-                    handleMessagePress(conversation.key);
-                  }}
-                  name={conversation.value.name}
-                  lastestChat={dataToText_LastestMessage(
-                    conversation.value.lastestMessage
-                  )}
-                  time={dataToText_Time(conversation.value.lastestMessage)}
-                  ImageSize={60}
-                  imageSource={conversation.value.avaUrl??"https://firebasestorage.googleapis.com/v0/b/tickntalk2.appspot.com/o/Logo.png?alt=media&token=1f67739c-177d-43f6-89e7-3dfefa8f828f"}
-                />
-              ))}
+              {
+                (searchText ? searchedConversations : listConversations) // first, decide which list to render
+                  .map((conversation) => (
+                    <MessageCard
+                      onPress={() => {
+                        handleMessagePress(conversation.key);
+                      }}
+                      name={conversation.value.name}
+                      lastestChat={dataToText_LastestMessage(
+                        conversation.value.lastestMessage
+                      )}
+                      time={dataToText_Time(conversation.value.lastestMessage)}
+                      ImageSize={60}
+                      imageSource={conversation.value.avaUrl ?? "https://firebasestorage.googleapis.com/v0/b/tickntalk2.appspot.com/o/Logo.png?alt=media&token=1f67739c-177d-43f6-89e7-3dfefa8f828f"}
+                    />
+                  ))}
             </ScrollView>
           </Layout>
         </ImageBackground>

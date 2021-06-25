@@ -4,7 +4,6 @@ import {
   Alert,
   SafeAreaView,
   ScrollView,
-  TouchableOpacity,
 } from "react-native";
 import { SearchBar } from "react-native-elements";
 import * as styles from "../shared/styles";
@@ -19,24 +18,25 @@ import { emailToKey } from "../Utils/emailKeyConvert";
 import { useNavigation } from "@react-navigation/native";
 import { navigateAndReset } from "../Utils/navigation";
 import { useRealtimeFire } from "../hooks/useRealtimeFire";
-import {SafeView, Styles} from '../styles/Styles';
+import { SafeView, Styles } from '../styles/Styles';
 
 export default ScreenCreateConversation = () => {
   const { user } = useSignedIn();
   const rawUsers = useFiredux("user");
+  const [searchText, setSearchText] = useState("");
 
-  const [listUsers, setListUsers] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState({});
   const navigation = useNavigation();
 
   useEffect(() => {
-    if (user && rawUsers) {
-      setListUsers(
-        Object.values(rawUsers).filter(
-          (u) => u.email !== user.email && checkEnoughUserInfo(u).isValid
-        )
-      );
-    }
+    // sort search result
+  }, [searchText])
+
+  const listUsers = React.useMemo(() => {
+    if (user && rawUsers)
+      return Object.values(rawUsers).filter(
+        (u) => u.email !== user.email && checkEnoughUserInfo(u).isValid
+      )
   }, [user, rawUsers]);
 
   const handleCreateConversationPress = () => {
@@ -121,11 +121,9 @@ export default ScreenCreateConversation = () => {
                 }}
                 leftIconContainerStyle={{ marginLeft: 16 }}
                 inputStyle={{}}
-                // onChangeText={(Text) => {
-                //   this.setState({ toSearchText: Text });
-                //   this.onChangeSearchText(Text);
-                // }}
-                // value={this.state.toSearchText}
+
+                value={searchText}
+                onChangeText={setSearchText}
               />
 
               <Icon
