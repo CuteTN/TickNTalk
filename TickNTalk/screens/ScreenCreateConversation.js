@@ -92,31 +92,58 @@ export default ScreenCreateConversation = () => {
         "Do you want to chat in private message instead?",
         [
           {
+            text: "No",
+            style: "default",
+            onPress: () => createNewConversation(listMembers, "group"),
+          },
+          {
             text: "Yes",
             style: "default",
-            onPress: () => handleCreatePrivateMessage(listMembers),
+            onPress: () => createNewConversation(listMembers, "private"),
           },
         ]
       );
+    } else {
+      createNewConversation(listMembers, "group");
     }
   };
 
   /**
-   * @param {[]} listMembers
+   * @param {[string]} listMembers
+   * @param {"private"|"group"} type
    */
-  const handleCreatePrivateMessage = (listMembers) => {
-    if (listMembers.length !== 2) return;
+  const createNewConversation = (listMembers, type) => {
+    if (listMembers.length !== 2 && type === "private")
+      return;
 
-    if (listMembers[0].localeCompare(listMembers[1]) === 1)
-      listMembers.reverse();
-    let type = "private";
-    const key = `${emailToKey(listMembers[0])}~${emailToKey(listMembers[1])}`;
-    Fire.update(`conversation/${key}`, { listMembers }).then(() => {
-      Fire.update(`conversation/${key}/`, { type }).then(() => {
-        navigation.goBack();
-      });
-    });
+    listMembers.sort((a, b) => a.localeCompare(b));
+
+    switch (type) {
+      case "private": {
+        const key = `${emailToKey(listMembers[0])}~${emailToKey(listMembers[1])}`;
+
+        Fire.update(`conversation/${key}`, { listMembers, type }).then(() => {
+          navigation.goBack();
+        });
+
+        break;
+      }
+
+      case "group": {
+        Fire.push(`conversation`, { listMembers, type }).then(() => {
+          navigation.goBack();
+        })
+
+        break;
+      }
+    }
   };
+
+  const handleCreateGroup = (listMembers) => {
+    listMembers?.sort?.();
+
+    let type = "group";
+  }
 
   const handleToggleSelectedUser = (email) => {
     setSelectedUserEmails((prev) => ({

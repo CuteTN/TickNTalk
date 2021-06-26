@@ -15,7 +15,7 @@ const matchPointString = (text, targetString) => {
   let result = 0;
 
   words.forEach(word => {
-    result += targetString.includes(word) ? word.length : 0;
+    result += (" " + targetString).includes(" " + word) ? word.length : 0;
   });
 
   return result;
