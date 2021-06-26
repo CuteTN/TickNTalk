@@ -152,17 +152,22 @@ class Fire {
   // push a new item to refPath (i.e value would be in child ref of refPath). auto generate new ID.
   static push = async (refPath, value) => {
     let ref = firebase.database().ref().child(refPath);
-    const link = await ref.push(value).then(
-      (value) =>
-        log.logSuccess(
-          `New item was added successfully at ${refPath}: ${value}`
-        ),
-      (error) =>
-        log.logError(
-          `Could not add new item to ${refPath}:\n${value}\nError: ${error}`
-        )
-    );
-    return link;
+
+    try {
+      const link = await ref.push(value);
+
+      log.logSuccess(
+        `New item was added successfully at ${refPath}: ${link}`
+      );
+
+      return link;
+    } catch (error) {
+      log.logError(
+        `Could not add new item to ${refPath}:\n${value}\nError: ${error}`
+      )
+
+      return null;
+    };
   };
 
   // set refPath new value, remove all old values

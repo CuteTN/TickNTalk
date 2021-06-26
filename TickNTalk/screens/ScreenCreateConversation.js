@@ -20,6 +20,7 @@ import { navigateAndReset } from "../Utils/navigation";
 import { useRealtimeFire } from "../hooks/useRealtimeFire";
 import { SafeView, Styles } from '../styles/Styles';
 import { matchPointUser } from "../Utils/search";
+import { SCREENS } from ".";
 
 export default ScreenCreateConversation = () => {
   const { user } = useSignedIn();
@@ -123,15 +124,18 @@ export default ScreenCreateConversation = () => {
         const key = `${emailToKey(listMembers[0])}~${emailToKey(listMembers[1])}`;
 
         Fire.update(`conversation/${key}`, { listMembers, type }).then(() => {
-          navigation.goBack();
+          navigation.replace(SCREENS.message.name, { conversationId: key });
         });
 
         break;
       }
 
       case "group": {
-        Fire.push(`conversation`, { listMembers, type }).then(() => {
-          navigation.goBack();
+        Fire.push(`conversation`, { listMembers, type }).then((res) => {
+          const { key } = res ?? {};
+
+          if (key)
+            navigation.replace(SCREENS.message.name, { conversationId: key });
         })
 
         break;

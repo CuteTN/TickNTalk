@@ -16,6 +16,8 @@ import * as Icon from "../components/Icon";
 import { SafeView, Styles } from "../styles/Styles";
 import { TopNavigationBar } from "../components/TopNavigationBar";
 import { matchPointConversation } from "../Utils/search";
+import { checkConversationHasUser, checkConversationSeenByUser } from "../Utils/conversation";
+import { useSignedIn } from "../hooks/useSignedIn";
 
 const ScreenConversations = () => {
   const [searchText, setSearchText] = useState("");
@@ -24,10 +26,13 @@ const ScreenConversations = () => {
   const listRawConversations = useFiredux("conversation") ?? {};
   const listRawUsers = useFiredux("user") ?? {};
 
+  const { user } = useSignedIn();
+
   const listConversations = React.useMemo(() => {
     return Object.entries(listRawConversations ?? {})
+      .filter(c => checkConversationHasUser(user?.email, c[1]))
       .map((c) => ({ key: c[0], value: c[1] }));
-  }, [listRawConversations])
+  }, [listRawConversations, user])
 
   // same as list conversation but is sorted to fit search text
   const [searchedConversations, setSearchedConversations] = useState([]);
@@ -123,6 +128,7 @@ const ScreenConversations = () => {
                       lastestChat={dataToText_LastestMessage(
                         conversation.value.lastestMessage
                       )}
+                      isRead={checkConversationSeenByUser(user.email, conversation.value)}
                       time={dataToText_Time(conversation.value.lastestMessage)}
                       ImageSize={60}
                       imageSource={conversation.value.avaUrl ?? "https://firebasestorage.googleapis.com/v0/b/tickntalk2.appspot.com/o/Logo.png?alt=media&token=1f67739c-177d-43f6-89e7-3dfefa8f828f"}

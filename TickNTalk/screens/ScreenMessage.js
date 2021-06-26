@@ -36,6 +36,7 @@ import * as Icon from "../components/Icon";
 import * as Permissions from "expo-permissions";
 import { sendPushNotification } from "../Utils/PushNoti";
 import { emailToKey, keyToToken } from "../Utils/emailKeyConvert";
+import { checkConversationSeenByUser } from "../Utils/conversation";
 
 const ScreenMessage = ({ route }) => {
   const navigation = useNavigation();
@@ -103,6 +104,24 @@ const ScreenMessage = ({ route }) => {
     // }
   };
 
+  // seen message when user is in this conversation
+  useEffect(() => {
+    if (user?.email && conversation) {
+      if (!checkConversationSeenByUser(user, conversation)) {
+        handleSeenByUser(user);
+      }
+    }
+  }, [user, conversation])
+
+  const handleSeenByUser = ({ email }) => {
+    const listSeenMembers = Object.values(conversation?.listSeenMembers ?? {});
+
+    if (!listSeenMembers.includes(email)) {
+      listSeenMembers.push(email);
+      Fire.update(`conversation/${conversationId}/`, { listSeenMembers });
+    }
+  }
+
   const handleInfoPress = (conversationId) => {
     //navigate to conversation info, for edit.
     //navigation.navigate(SCREENS.message.name);
@@ -132,7 +151,7 @@ const ScreenMessage = ({ route }) => {
       }
     });
   };
-  
+
   // trigged when press send message, upload to Realtime
   const HandlePressSend = async (
     newMessages = [],
@@ -174,6 +193,12 @@ const ScreenMessage = ({ route }) => {
         data: newMessages[0],
       }
     );
+    await Fire.update(
+      `conversation/${conversationId}/`,
+      {
+        listSeenMembers: [],
+      }
+    )
     setPress(true);
     if (lastestMessage.video) {
       lastestMessage.text = "Send video";
