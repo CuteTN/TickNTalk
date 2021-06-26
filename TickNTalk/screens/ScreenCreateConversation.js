@@ -89,9 +89,14 @@ export default ScreenCreateConversation = () => {
     if (listMembers.length === 2) {
       // showMessage({ type: "success", message: })
       Alert.alert(
-        "Private message",
+        "Create conversation",
         "Do you want to chat in private message instead?",
         [
+          {
+            text: "Cancel",
+            style: "cancel",
+            onPress: () => { },
+          },
           {
             text: "No",
             style: "default",
@@ -105,7 +110,22 @@ export default ScreenCreateConversation = () => {
         ]
       );
     } else {
-      createNewConversation(listMembers, "group");
+      Alert.alert(
+        "Create conversation",
+        "Do you want to create a conversation with these users?",
+        [
+          {
+            text: "Cancel",
+            style: "cancel",
+            onPress: () => { },
+          },
+          {
+            text: "Yes",
+            style: "default",
+            onPress: () => createNewConversation(listMembers, "group"),
+          },
+        ]
+      )
     }
   };
 
