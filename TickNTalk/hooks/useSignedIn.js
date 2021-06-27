@@ -55,7 +55,7 @@ export const useSignedIn = () => {
   }, []);
   useEffect(() => {
     if (token) {
-      console.log(tokenToKey(token));
+      //console.log(tokenToKey(token));
       if (email)
         Fire.update(`user/${emailToKey(email)}/tokens/${tokenToKey(token)}`, {
           isAvailable: true,

@@ -1,10 +1,6 @@
 import { Layout, Text } from "@ui-kitten/components";
 import React, { useEffect, useState } from "react";
-import {
-  Alert,
-  SafeAreaView,
-  ScrollView,
-} from "react-native";
+import { Alert, SafeAreaView, ScrollView } from "react-native";
 import { SearchBar } from "react-native-elements";
 import * as styles from "../shared/styles";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -12,13 +8,14 @@ import { MessageCard } from "../components/MessageCard";
 import { useFiredux } from "../hooks/useFiredux";
 import { useSignedIn } from "../hooks/useSignedIn";
 import { checkEnoughUserInfo } from "../Utils/FieldsValidating";
+import { TopNavigationBar } from "../components/TopNavigationBar";
 import { showMessage } from "react-native-flash-message";
 import Fire from "../firebase/Fire";
 import { emailToKey } from "../Utils/emailKeyConvert";
 import { useNavigation } from "@react-navigation/native";
 import { navigateAndReset } from "../Utils/navigation";
 import { useRealtimeFire } from "../hooks/useRealtimeFire";
-import { SafeView, Styles } from '../styles/Styles';
+import { SafeView, Styles } from "../styles/Styles";
 import { matchPointUser } from "../Utils/search";
 import { SCREENS } from ".";
 
@@ -39,39 +36,38 @@ export default ScreenCreateConversation = () => {
   const listUsers = React.useMemo(() => {
     if (user && rawUsers)
       return Object.entries(rawUsers)
-        .map(entry => ({ key: entry[0], value: entry[1], }))
+        .map((entry) => ({ key: entry[0], value: entry[1] }))
         .filter(
-          (u) => u.value.email !== user.email && checkEnoughUserInfo(u.value).isValid
-        )
+          (u) =>
+            u.value.email !== user.email && checkEnoughUserInfo(u.value).isValid
+        );
   }, [user, rawUsers]);
 
   useEffect(() => {
     if (listUsers && selectedUserEmails) {
       let newRenderedList = [];
 
-      listUsers.forEach(c => {
+      listUsers.forEach((c) => {
         const matchPoint = matchPointUser(searchText, c.value);
-        const selected = Boolean(selectedUserEmails[c.value?.email])
-
+        const selected = Boolean(selectedUserEmails[c.value?.email]);
 
         if (!(searchText && matchPoint <= 0 && !selected))
           newRenderedList.push({
             ...c,
             matchPoint,
             selected,
-          })
+          });
       });
 
       newRenderedList.sort((c1, c2) =>
-        c1.selected - c2.selected ?
-          c2.selected - c1.selected
-          :
-          c2.matchPoint - c1.matchPoint
+        c1.selected - c2.selected
+          ? c2.selected - c1.selected
+          : c2.matchPoint - c1.matchPoint
       );
 
       setListRenderedUsers(newRenderedList);
     }
-  }, [searchText, listUsers, selectedUserEmails])
+  }, [searchText, listUsers, selectedUserEmails]);
 
   const handleCreateConversationPress = () => {
     const listMembers = Object.keys(selectedUserEmails).filter(
@@ -95,7 +91,7 @@ export default ScreenCreateConversation = () => {
           {
             text: "Cancel",
             style: "cancel",
-            onPress: () => { },
+            onPress: () => {},
           },
           {
             text: "No",
@@ -117,7 +113,7 @@ export default ScreenCreateConversation = () => {
           {
             text: "Cancel",
             style: "cancel",
-            onPress: () => { },
+            onPress: () => {},
           },
           {
             text: "Yes",
@@ -125,7 +121,7 @@ export default ScreenCreateConversation = () => {
             onPress: () => createNewConversation(listMembers, "group"),
           },
         ]
-      )
+      );
     }
   };
 
@@ -134,14 +130,15 @@ export default ScreenCreateConversation = () => {
    * @param {"private"|"group"} type
    */
   const createNewConversation = (listMembers, type) => {
-    if (listMembers.length !== 2 && type === "private")
-      return;
+    if (listMembers.length !== 2 && type === "private") return;
 
     listMembers.sort((a, b) => a.localeCompare(b));
 
     switch (type) {
       case "private": {
-        const key = `${emailToKey(listMembers[0])}~${emailToKey(listMembers[1])}`;
+        const key = `${emailToKey(listMembers[0])}~${emailToKey(
+          listMembers[1]
+        )}`;
 
         Fire.update(`conversation/${key}`, { listMembers, type }).then(() => {
           navigation.replace(SCREENS.message.name, { conversationId: key });
@@ -156,7 +153,7 @@ export default ScreenCreateConversation = () => {
 
           if (key)
             navigation.replace(SCREENS.message.name, { conversationId: key });
-        })
+        });
 
         break;
       }
@@ -167,7 +164,7 @@ export default ScreenCreateConversation = () => {
     listMembers?.sort?.();
 
     let type = "group";
-  }
+  };
 
   const handleToggleSelectedUser = (email) => {
     setSelectedUserEmails((prev) => ({
@@ -177,61 +174,59 @@ export default ScreenCreateConversation = () => {
   };
 
   return (
-    <Layout style={{ flex: 1 }}>
-      <SafeAreaView style={SafeView}>
-        <Layout style={{ flex: 1 }}>
-          <Layout style={[styles.center]}>
-            <Layout
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                marginTop: 20,
-                alignItems: "center",
+    <SafeAreaView style={SafeView}>
+      <TopNavigationBar title="Create Conversation" />
+      <Layout style={{ flex: 1 }}>
+        <Layout style={[styles.center]}>
+          <Layout
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              marginTop: 20,
+              alignItems: "center",
+            }}
+          >
+            <SearchBar
+              platform="ios"
+              placeholder="Search for users"
+              lightTheme="true"
+              containerStyle={{
+                marginHorizontal: 8,
+                backgroundColor: "transparent",
+                width: "95%",
+                flex: 5,
               }}
-            >
-              <SearchBar
-                platform="ios"
-                placeholder="Search for users"
-                lightTheme="true"
-                containerStyle={{
-                  marginHorizontal: 8,
-                  backgroundColor: "transparent",
-                  width: "95%",
-                  flex: 5,
-                }}
-                inputContainerStyle={{
-                  backgroundColor: "whitesmoke",
-                  borderRadius: 23,
-                }}
-                leftIconContainerStyle={{ marginLeft: 16 }}
-                inputStyle={{}}
+              inputContainerStyle={{
+                backgroundColor: "whitesmoke",
+                borderRadius: 23,
+              }}
+              leftIconContainerStyle={{ marginLeft: 16 }}
+              inputStyle={{}}
+              value={searchText}
+              onChangeText={setSearchText}
+            />
 
-                value={searchText}
-                onChangeText={setSearchText}
-              />
-
-              <Icon
-                name={"people-circle-outline"}
-                size={50}
-                style={{ flex: 1 }}
-                onPress={handleCreateConversationPress}
-              />
-            </Layout>
-            {/*  Binding message list */}
-            <ScrollView>
-              {listRenderedUsers?.map((user) => (
-                <MessageCard
-                  onPress={() => handleToggleSelectedUser(user?.value?.email)}
-                  name={`${user?.value?.firstName} ${user?.value?.lastName}`}
-                  lastestChat={`${user?.value?.displayName}`}
-                  imageSource={user?.value?.avaUrl ?? "../assets/bg.png"}
-                  isRead={!user?.selected} // highlight selection
-                />
-              ))}
-            </ScrollView>
+            <Icon
+              name={"people-circle-outline"}
+              size={50}
+              style={{ flex: 1 }}
+              onPress={handleCreateConversationPress}
+            />
           </Layout>
+          {/*  Binding message list */}
+          <ScrollView>
+            {listRenderedUsers?.map((user) => (
+              <MessageCard
+                onPress={() => handleToggleSelectedUser(user?.value?.email)}
+                name={`${user?.value?.firstName} ${user?.value?.lastName}`}
+                lastestChat={`${user?.value?.displayName}`}
+                imageSource={user?.value?.avaUrl ?? "../assets/bg.png"}
+                isRead={!user?.selected} // highlight selection
+              />
+            ))}
+          </ScrollView>
         </Layout>
-      </SafeAreaView>
-    </Layout>
+      </Layout>
+    </SafeAreaView>
   );
 };
