@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import * as styles from "../shared/styles";
 import { ImageBackground, SafeAreaView, TouchableOpacity } from "react-native";
 import { useRealtimeFire } from "../hooks/useRealtimeFire";
@@ -9,6 +9,7 @@ import { BasicImage } from "../components/BasicImage";
 import { pickProcess, uploadPhotoAndGetLink } from "../Utils/uploadPhotoVideo";
 import { Ionicons } from "@expo/vector-icons";
 import { Styles } from "../styles/Styles";
+import { emailToKey } from "../Utils/emailKeyConvert";
 
 const ScreenConversationInfo = ({ route }) => {
   const { user } = useSignedIn();
@@ -17,14 +18,30 @@ const ScreenConversationInfo = ({ route }) => {
   const [avatarLink, updateAvatarLink] = useState("");
   const [isEditName, setEdit] = useState(false);
   const [cName, updateName] = useState("");
+  const listRawUsers = useFiredux("user") ?? {};
+
   useEffect(() => {
-    console.log(conversation);
     updateName(conversation?.name);
     updateAvatarLink(conversation?.avaUrl);
   }, [conversation]);
 
+  const listMembers = useMemo(() => {
+    if (conversation && listRawUsers) {
+      const result = [];
+      Object.values(conversation?.listMembers).forEach(email => {
+        const member = listRawUsers[emailToKey(email)];
+        if (member)
+          result.push(member)
+      })
+
+      return result;
+    }
+
+    return [];
+  }, [conversation, listRawUsers])
+
   const handleUpdateName = async () => {
-    Fire.set(`conversation/${conversationId}/name/`, cName).then(() => {});
+    Fire.set(`conversation/${conversationId}/name/`, cName).then(() => { });
   };
   const handleUpdateAvatar = async () => {
     let image = await pickProcess(true);
@@ -32,7 +49,7 @@ const ScreenConversationInfo = ({ route }) => {
     let imageName = `Converstation_${conversationId}`;
     let downloadLink = await uploadPhotoAndGetLink(image.uri, imageName);
     Fire.set(`conversation/${conversationId}/avaUrl/`, downloadLink).then(
-      () => {}
+      () => { }
     );
   };
   return (
@@ -70,7 +87,7 @@ const ScreenConversationInfo = ({ route }) => {
                 justifyContent: "center",
                 alignItems: "center",
               }}
-              //onPress={handleAvatarPress}
+            //onPress={handleAvatarPress}
             >
               <BasicImage
                 icon={200}

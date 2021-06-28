@@ -147,8 +147,8 @@ export default ScreenCreateConversation = () => {
       }
 
       case "group": {
-        let name = `${user.firstName}'s group`;
-        Fire.push(`conversation`, { listMembers, type, name }).then((res) => {
+        let name = `${user.displayName}'s new group`;
+        Fire.push(`conversation`, { listMembers, type, name, owner: user.email }).then((res) => {
           const { key } = res ?? {};
 
           if (key)
