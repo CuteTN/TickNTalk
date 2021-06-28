@@ -15,6 +15,7 @@ import { emailToKey } from "../Utils/emailKeyConvert";
 import { useNavigation } from "@react-navigation/native";
 import { matchPointUser } from "../Utils/search";
 import { SCREENS } from ".";
+import { SafeView } from "../styles/Styles";
 
 export default ScreenCreateConversation = () => {
   const { user } = useSignedIn();
