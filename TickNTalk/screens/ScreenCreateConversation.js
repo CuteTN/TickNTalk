@@ -1,4 +1,4 @@
-import { Layout, Text } from "@ui-kitten/components";
+import { Layout, Text, CheckBox } from "@ui-kitten/components";
 import React, { useEffect, useState } from "react";
 import { Alert, SafeAreaView, ScrollView } from "react-native";
 import { SearchBar } from "react-native-elements";
@@ -15,7 +15,8 @@ import { emailToKey } from "../Utils/emailKeyConvert";
 import { useNavigation } from "@react-navigation/native";
 import { matchPointUser } from "../Utils/search";
 import { SCREENS } from ".";
-import { SafeView } from "../styles/Styles";
+import { SafeView, windowWidth } from "../styles/Styles";
+import { TouchableOpacity } from "react-native-gesture-handler";
 
 export default ScreenCreateConversation = () => {
   const { user } = useSignedIn();
@@ -146,7 +147,8 @@ export default ScreenCreateConversation = () => {
       }
 
       case "group": {
-        Fire.push(`conversation`, { listMembers, type }).then((res) => {
+        let name = `${user.firstName}'s group`;
+        Fire.push(`conversation`, { listMembers, type, name }).then((res) => {
           const { key } = res ?? {};
 
           if (key)
@@ -214,13 +216,31 @@ export default ScreenCreateConversation = () => {
           {/*  Binding message list */}
           <ScrollView>
             {listRenderedUsers?.map((user) => (
-              <MessageCard
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-evenly",
+                  width: "100%"
+                }}
                 onPress={() => handleToggleSelectedUser(user?.value?.email)}
-                name={`${user?.value?.firstName} ${user?.value?.lastName}`}
-                lastestChat={`${user?.value?.displayName}`}
-                imageSource={user?.value?.avaUrl ?? "../assets/bg.png"}
-                isRead={!user?.selected} // highlight selection
-              />
+              >
+                <CheckBox
+                  style={{ flex: 1, marginLeft: 30 }}
+                  status="primary"
+                  checked={user?.selected}
+                ></CheckBox>
+                <MessageCard
+                  containerStyle={{ flex: 9 }}
+                  name={`${user?.value?.firstName} ${user?.value?.lastName}`}
+                  lastestChat={`${user?.value?.displayName}`}
+                  ImageSize={60}
+                  imageSource={user?.value?.avaUrl ?? "../assets/bg.png"}
+                  isRead={!user?.selected}
+                // highlight selection
+                />
+              </TouchableOpacity>
             ))}
           </ScrollView>
         </Layout>

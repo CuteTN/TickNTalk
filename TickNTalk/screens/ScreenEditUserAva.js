@@ -11,9 +11,9 @@ import { useSignedIn } from "../hooks/useSignedIn";
 import { emailToKey } from "../Utils/emailKeyConvert";
 
 import { BasicImage } from "../components/BasicImage";
-import { pickProcess,uploadPhotoAndGetLink } from "../Utils/uploadPhotoVideo";
+import { pickProcess, uploadPhotoAndGetLink } from "../Utils/uploadPhotoVideo";
 import { useNavigation } from '@react-navigation/native';
-import {SafeView, Styles} from '../styles/Styles';
+import { SafeView, Styles } from '../styles/Styles';
 
 
 const ScreenEditUserAva = () => {
@@ -34,38 +34,41 @@ const ScreenEditUserAva = () => {
   //#region Upload ảnh từ app lên Storage (lưu)
 
   //Upload ảnh lên Storage
-  const uploadAvatarToFirebase= async (uri)=>{ 
-    let downloadURL= await uploadPhotoAndGetLink(uri,user.email);
-        Fire.update(`user/${emailToKey(user.email)}`, {
-          avaUrl: downloadURL,
-        }).then(
-          () => {
-            Alert.alert(
-              "Thông báo",
-              "Đã cập nhật ảnh đại diện thành công",
-              [{ text: "Đồng ý", style: "cancel" , onPress:()=>{navigation.goBack()}}],
-              { cancelable: false }
-            );
-          },
-          (error) => {
-            Alert.alert(
-              "Thông báo",
-              "Đã có lỗi xảy ra trong lúc lưu ảnh",
-              [{ text: "Đồng ý", style: "cancel" }],
-              { cancelable: true }
-            );
-          }
+  const uploadAvatarToFirebase = async (uri) => {
+    let downloadURL = await uploadPhotoAndGetLink(uri, user.email);
+    Fire.update(`user/${emailToKey(user.email)}`, {
+      avaUrl: downloadURL,
+    }).then(
+      () => {
+        Alert.alert(
+          "Success",
+          "Profile image updated successfully!",
+          [{ text: "OK", style: "default", onPress: () => { navigation.goBack() } }],
+          { cancelable: false }
         );
-    
+      },
+      (error) => {
+        Alert.alert(
+          "Error",
+          "Something went wrong",
+          [{ text: "OK", style: "cancel" }],
+          { cancelable: true }
+        );
+      }
+    );
+
   }
   // Nhấn vào nút Done
   const handleDonePress = () => {
+    if (!avatarLink)
+      return;
+
     Alert.alert(
-      "Thông báo",
-      "Bạn có muốn cập nhật ảnh đại diện",
+      "Update profile image",
+      "Are you sure?",
       [
-        { text: "Đồng ý", onPress: () => uploadAvatarToFirebase(avatarLink) },
-        { text: "Hủy", style: "cancel" },
+        { text: "OK", style: "default", onPress: () => uploadAvatarToFirebase(avatarLink) },
+        { text: "Cancel", style: "cancel" },
       ],
       { cancelable: true }
     );
