@@ -1,4 +1,4 @@
-import { Layout, Text } from "@ui-kitten/components";
+import { Layout, Text, CheckBox } from "@ui-kitten/components";
 import React, { useEffect, useState } from "react";
 import { Alert, SafeAreaView, ScrollView } from "react-native";
 import { SearchBar } from "react-native-elements";
@@ -18,6 +18,7 @@ import { useRealtimeFire } from "../hooks/useRealtimeFire";
 import { SafeView, Styles } from "../styles/Styles";
 import { matchPointUser } from "../Utils/search";
 import { SCREENS } from ".";
+import {windowWidth} from "../styles/Styles"
 
 export default ScreenCreateConversation = () => {
   const { user } = useSignedIn();
@@ -148,7 +149,7 @@ export default ScreenCreateConversation = () => {
       }
 
       case "group": {
-        let name = `${user.firstName}'s group`
+        let name = `${user.firstName}'s group`;
         Fire.push(`conversation`, { listMembers, type, name }).then((res) => {
           const { key } = res ?? {};
 
@@ -217,13 +218,23 @@ export default ScreenCreateConversation = () => {
           {/*  Binding message list */}
           <ScrollView>
             {listRenderedUsers?.map((user) => (
-              <MessageCard
-                onPress={() => handleToggleSelectedUser(user?.value?.email)}
-                name={`${user?.value?.firstName} ${user?.value?.lastName}`}
-                lastestChat={`${user?.value?.displayName}`}
-                imageSource={user?.value?.avaUrl ?? "../assets/bg.png"}
-                isRead={!user?.selected} // highlight selection
-              />
+              <Layout
+              style={{ flexDirection: "row",alignItems: "center",justifyContent:"space-around",width:"80%"}}
+              >
+                <CheckBox style={{ flex:1}}
+                status="primary"
+                checked={user?.selected}
+                onChange={()=>handleToggleSelectedUser(user?.value?.email)}
+                ></CheckBox>
+                <MessageCard
+                  containerStyle={{width:"90%"}}
+                  name={`${user?.value?.firstName} ${user?.value?.lastName}`}
+                  lastestChat={`${user?.value?.displayName}`}
+                  ImageSize={60}
+                  imageSource={user?.value?.avaUrl ?? "../assets/bg.png"}
+                 // highlight selection
+                />
+              </Layout>
             ))}
           </ScrollView>
         </Layout>
