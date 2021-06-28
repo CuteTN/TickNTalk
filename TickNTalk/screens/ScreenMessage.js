@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import { Layout, Button, Divider } from "@ui-kitten/components";
 import * as styles from "../shared/styles";
 import { ImageBackground, SafeAreaView, TouchableOpacity } from "react-native";
@@ -10,6 +10,7 @@ import {
   InputToolbar,
   Composer,
   MessageImage,
+  FlatList,
 } from "react-native-gifted-chat";
 import { Video, Audio } from "expo-av";
 import { MessageCard } from "../components/MessageCard";
@@ -37,9 +38,12 @@ import * as Permissions from "expo-permissions";
 import { sendPushNotification } from "../Utils/PushNoti";
 import { emailToKey, keyToToken } from "../Utils/emailKeyConvert";
 import { checkConversationSeenByUser } from "../Utils/conversation";
+import { useFiredux } from "../hooks/useFiredux";
+import { BasicImage } from "../components/BasicImage";
 
 const ScreenMessage = ({ route }) => {
   const navigation = useNavigation();
+  const listRawUsers = useFiredux("user") ?? {};
 
   //#region  message properties
   const { user } = useSignedIn();
@@ -48,6 +52,17 @@ const ScreenMessage = ({ route }) => {
   const [currentMessageText, updateText] = useState("");
   const [conversation] = useRealtimeFire("conversation", conversationId);
   const [justPressSend, setPress] = useState(false);
+  const listAvaSeen = useMemo(() => {
+    if (listRawUsers && conversation) {
+      let result = Object.values(conversation?.listSeenMembers ?? {})
+        ?.filter?.((email) => user?.email !== email)
+        .map?.((email) => {
+          return listRawUsers[emailToKey(email)]?.avaUrl;
+        });
+      return result;
+    }
+    return [];
+  });
   //#endregion
   //#region audio properties
   //const [isRecording, setIsRecording] = useState(false);
@@ -111,7 +126,7 @@ const ScreenMessage = ({ route }) => {
         handleSeenByUser(user);
       }
     }
-  }, [user, conversation])
+  }, [user, conversation]);
 
   const handleSeenByUser = ({ email }) => {
     const listSeenMembers = Object.values(conversation?.listSeenMembers ?? {});
@@ -120,7 +135,7 @@ const ScreenMessage = ({ route }) => {
       listSeenMembers.push(email);
       Fire.update(`conversation/${conversationId}/`, { listSeenMembers });
     }
-  }
+  };
 
   const handleInfoPress = (conversationId) => {
     //navigate to conversation info, for edit.
@@ -143,9 +158,8 @@ const ScreenMessage = ({ route }) => {
         if (countMember > 2) pushContent.sender += " tới " + conversation.name;
         let membertoKey = emailToKey(`${member}`);
         Fire.get(`user/${membertoKey}/tokens`).then((userToken) => {
-          Object.keys(userToken.val()).forEach((key) => {
-            sendPushNotification(keyToToken(key), pushContent).then(() => {
-            });
+          Object.keys(userToken).forEach((key) => {
+            sendPushNotification(keyToToken(key), pushContent).then(() => {});
           });
         });
       }
@@ -193,12 +207,9 @@ const ScreenMessage = ({ route }) => {
         data: newMessages[0],
       }
     );
-    await Fire.update(
-      `conversation/${conversationId}/`,
-      {
-        listSeenMembers: [],
-      }
-    )
+    await Fire.update(`conversation/${conversationId}/`, {
+      listSeenMembers: [],
+    });
     setPress(true);
     if (lastestMessage.video) {
       lastestMessage.text = "Send video";
@@ -215,6 +226,31 @@ const ScreenMessage = ({ route }) => {
   };
 
   //#region Customize GiftedChat
+  // footer seen member
+  const renderFooter = (listAvaSeen) => {
+    return (
+      <Layout
+        style={{
+          width: "auto",
+          borderRadius: 15,
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "flex-end",
+          height: 32,
+          marginRight: 8,
+          backgroundColor: "transparent"
+        }}
+      >
+        {listAvaSeen.map((url) => 
+          <BasicImage
+            icon={20}
+            source={{ uri: url }}
+            borderRadius="100%"
+          ></BasicImage>
+        )}
+      </Layout>
+    );
+  };
 
   //Chat bubble
   const renderBubble = (props) => {
@@ -447,7 +483,7 @@ const ScreenMessage = ({ route }) => {
 
   //press to take picture
   const takePicture = async () => {
-    let photo = await camera.current.takePictureAsync();
+    let photo = await camera.current.takePictureAsync({ quality: 0.5 });
     setPreviewVisible(true);
     setCapturedImage(photo);
   };
@@ -739,7 +775,10 @@ const ScreenMessage = ({ route }) => {
             containerStyle={{ width: "60%", marginTop: 8 }}
             lastestChat="Last seen recently"
             ImageSize={48}
-            imageSource={conversation?.avaUrl}
+            imageSource={
+              conversation?.avaUrl ??
+              "https://firebasestorage.googleapis.com/v0/b/tickntalk2.appspot.com/o/Logo.png?alt=media&token=1f67739c-177d-43f6-89e7-3dfefa8f828f"
+            }
           />
           <Button appearance="ghost">
             <Icon.Call style={{ width: 24, height: 24 }} />
@@ -776,7 +815,7 @@ const ScreenMessage = ({ route }) => {
             //showAvatarForEveryMessage
             //renderUsernameOnMessage
             //isTyping={this.state.isTyping}
-            //renderFooter={() => this.renderFooter(this.state.listAvaSeen)} có thể dùng để hiện thị danh sách người dùng đã seen
+            renderFooter={() => renderFooter(listAvaSeen)}
             renderComposer={renderComposer}
             renderInputToolbar={renderInputToolbar}
             renderSend={renderSend}

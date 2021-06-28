@@ -74,6 +74,8 @@ const ScreenMyProfile = () => {
   const handleSaveChangesPress = () => {
     if (isSavable()) {
       setEditingMode(false);
+      if (!tempUser.avaUrl) 
+      tempUser.avaUrl="https://firebasestorage.googleapis.com/v0/b/tickntalk2.appspot.com/o/avatar.png?alt=media&token=394b1a98-93f2-4c77-ab68-226fb5f82ce7";
       updateUser(tempUser);
       navigation.navigate(SCREENS.master.name);
     } else {
