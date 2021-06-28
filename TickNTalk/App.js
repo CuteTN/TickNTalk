@@ -28,6 +28,9 @@ import { EvaIconsPack } from "@ui-kitten/eva-icons";
 import { registerForPushNotificationsAsync } from "./Utils/PushNoti";
 import FlashMessage from "react-native-flash-message";
 
+//react native modals
+import { ModalPortal } from "react-native-modals";
+
 LogBox.ignoreLogs(["Warning: ..."]); // Ignore log notification by message
 LogBox.ignoreAllLogs(); //Ignore all log notifications
 
@@ -61,6 +64,7 @@ export default function App() {
             <StatusBar style="auto" /> */}
             {/* <TestFirebaseLoaded /> */}
           </Layout>
+          <ModalPortal/>
         </Provider>
       </ApplicationProvider>
       <FlashMessage position="bottom" animated={true} />
