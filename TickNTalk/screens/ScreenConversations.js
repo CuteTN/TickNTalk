@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Layout, Text } from "@ui-kitten/components";
+import { Layout, Text, Button } from "@ui-kitten/components";
 import * as styles from "../shared/styles";
 import {
   ScrollView,
   ImageBackground,
   SafeAreaView,
   TouchableOpacity,
+  FlatList,
 } from "react-native";
 import { SearchBar } from "react-native-elements";
 import { useNavigation } from "@react-navigation/native";
@@ -16,11 +17,57 @@ import * as Icon from "../components/Icon";
 import { SafeView, Styles } from "../styles/Styles";
 import { TopNavigationBar } from "../components/TopNavigationBar";
 import { matchPointConversation } from "../Utils/search";
-import { checkConversationHasUser, checkConversationSeenByUser } from "../Utils/conversation";
+import {
+  checkConversationHasUser,
+  checkConversationSeenByUser,
+} from "../Utils/conversation";
 import { useSignedIn } from "../hooks/useSignedIn";
+import {
+  BottomModal,
+  ModalContent,
+  ModalButton,
+  SlideAnimation,
+} from "react-native-modals";
+
+const DATA = [
+  {
+    text: "BLOCK",
+    func: () => {},
+  },
+  {
+    text: "BLOCK AGAIN",
+    func: () => {},
+  },
+  {
+    text: "BLOCK ONE MORE TIME",
+    func: () => {},
+  },
+];
 
 const ScreenConversations = () => {
   const [searchText, setSearchText] = useState("");
+  const [modalVisibility, setModalVisibility] = useState(false);
+
+  function setModalContent(newData) {
+    //newData is an array contains of [{title, function}]
+    const renderItem = ({ item }) => (
+      <Button
+        appearance="ghost"
+        onPress={() => {
+          item.func;
+        }}
+      >
+        {item.text}
+      </Button>
+    );
+    console.log(newData);
+    return (
+      <ModalContent>
+        <FlatList data={newData} renderItem={renderItem} />
+      </ModalContent>
+    );
+  }
+  const modalContent = setModalContent(DATA);
 
   const navigation = useNavigation();
   const listRawConversations = useFiredux("conversation") ?? {};
@@ -30,9 +77,9 @@ const ScreenConversations = () => {
 
   const listConversations = React.useMemo(() => {
     return Object.entries(listRawConversations ?? {})
-      .filter(c => checkConversationHasUser(user?.email, c[1]))
+      .filter((c) => checkConversationHasUser(user?.email, c[1]))
       .map((c) => ({ key: c[0], value: c[1] }));
-  }, [listRawConversations, user])
+  }, [listRawConversations, user]);
 
   // same as list conversation but is sorted to fit search text
   const [searchedConversations, setSearchedConversations] = useState([]);
@@ -41,23 +88,30 @@ const ScreenConversations = () => {
     if (searchText && listConversations) {
       let searchResult = [];
 
-      listConversations.forEach(c => {
-        const matchPoint = matchPointConversation(searchText, c.value, listRawUsers);
+      listConversations.forEach((c) => {
+        const matchPoint = matchPointConversation(
+          searchText,
+          c.value,
+          listRawUsers
+        );
 
         if (matchPoint > 0)
           searchResult.push({
             ...c,
-            matchPoint
-          })
+            matchPoint,
+          });
       });
 
       searchResult.sort((c1, c2) => c2.matchPoint - c1.matchPoint);
       setSearchedConversations(searchResult);
     }
-  }, [searchText, listConversations])
+  }, [searchText, listConversations]);
 
   const handleMessagePress = (conversationId) => {
     navigation.navigate(SCREENS.message.name, { conversationId });
+  };
+  const handleMessageLongPress = (conversationId) => {
+    setModalVisibility(true);
   };
 
   const handleCreateConversationPress = () => {
@@ -104,38 +158,58 @@ const ScreenConversations = () => {
                 }}
                 leftIconContainerStyle={{ marginLeft: 16 }}
                 inputStyle={{}}
-
                 value={searchText}
                 onChangeText={setSearchText}
               />
               <TouchableOpacity onPress={handleCreateConversationPress}>
-                <Icon.AddCircle
-                  style={{ width: 48, height: 48 }}
-
-                />
+                <Icon.AddCircle style={{ width: 48, height: 48 }} />
               </TouchableOpacity>
             </Layout>
             {/*  Binding message list */}
             <ScrollView>
-              {
-                (searchText ? searchedConversations : listConversations) // first, decide which list to render
-                  .map((conversation) => (
-                    <MessageCard
-                      onPress={() => {
-                        handleMessagePress(conversation.key);
-                      }}
-                      name={conversation.value.name}
-                      lastestChat={dataToText_LastestMessage(
-                        conversation.value.lastestMessage
-                      )}
-                      isRead={checkConversationSeenByUser(user.email, conversation.value)}
-                      time={dataToText_Time(conversation.value.lastestMessage)}
-                      ImageSize={60}
-                      imageSource={conversation.value.avaUrl ?? "https://firebasestorage.googleapis.com/v0/b/tickntalk2.appspot.com/o/Logo.png?alt=media&token=1f67739c-177d-43f6-89e7-3dfefa8f828f"}
-                    />
-                  ))}
+              {(searchText ? searchedConversations : listConversations) // first, decide which list to render
+                .map((conversation) => (
+                  <MessageCard
+                    onPress={() => {
+                      handleMessagePress(conversation.key);
+                    }}
+                    onLongPress={() => {
+                      handleMessageLongPress(conversation.key);
+                    }}
+                    name={conversation.value.name}
+                    lastestChat={dataToText_LastestMessage(
+                      conversation.value.lastestMessage
+                    )}
+                    isRead={checkConversationSeenByUser(
+                      user.email,
+                      conversation.value
+                    )}
+                    time={dataToText_Time(conversation.value.lastestMessage)}
+                    ImageSize={60}
+                    imageSource={
+                      conversation.value.avaUrl ??
+                      "https://firebasestorage.googleapis.com/v0/b/tickntalk2.appspot.com/o/Logo.png?alt=media&token=1f67739c-177d-43f6-89e7-3dfefa8f828f"
+                    }
+                  />
+                ))}
             </ScrollView>
           </Layout>
+
+          {/* MODAL */}
+          <BottomModal
+            visible={modalVisibility}
+            onTouchOutside={() => {
+              setModalVisibility(modalVisibility ? false : true);
+            }}
+            modalAnimation={
+              new SlideAnimation({
+                slideFrom: "bottom",
+              })
+            }
+            swipeDirection={["up", "down"]}
+          >
+            {modalContent}
+          </BottomModal>
         </ImageBackground>
       </Layout>
     </SafeAreaView>

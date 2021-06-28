@@ -58,8 +58,7 @@ const ScreenMyProfile = () => {
   };
 
   const handleUpdateAvatarPress = () => {
-    if (editingMode)
-    navigation.navigate(SCREENS.editUserAva.name);
+    if (editingMode) navigation.navigate(SCREENS.editUserAva.name);
   };
 
   const rowStyle = {
@@ -103,7 +102,7 @@ const ScreenMyProfile = () => {
       <ImageBackground
         source={require("../assets/bg.png")}
         style={{ flex: 1, resizeMode: "cover" }}
-        imageStyle={{opacity: 0.6}}
+        imageStyle={{ opacity: 0.6 }}
       >
         <SafeAreaView
           style={[
@@ -112,12 +111,15 @@ const ScreenMyProfile = () => {
           ]}
         >
           <TopNavigationBar title="About me" navigation={navigation} />
-          <Layout style={{ backgroundColor: "transparent" }}>
+          <Layout style={{ backgroundColor: "transparent", flex: 1 }}>
             <ScrollView style={{ backgroundColor: "transparent" }}>
               <Layout
-                style={[styles.center], { backgroundColor: "transparent" }}
+                style={([styles.center], { backgroundColor: "transparent" })}
               >
-                <TouchableOpacity enabled={editingMode} onPress={handleUpdateAvatarPress}>
+                <TouchableOpacity
+                  enabled={editingMode}
+                  onPress={handleUpdateAvatarPress}
+                >
                   <Avatar
                     style={[
                       Styles.overall,
@@ -216,13 +218,24 @@ const ScreenMyProfile = () => {
                   </Button>
                 )}
 
-                <Divider style={{ marginTop: 64 }} /><Button
-                  appearance="ghost"
-                  style={[Styles.overall, Styles.button, { width: "auto" }]}
-                  onPress={handleSignOutPress}
-                >
-                  SIGN OUT
-                </Button>
+                {!editingMode ? (
+                  <Layout
+                    style={{
+                      backgroundColor: "transparent",
+                      marginTop: 32,
+                      alignItems: "center",
+                    }}
+                  >
+                    <Text> Promise me you will comback UwU</Text>
+                    <Button
+                      appearance="outline"
+                      style={[Styles.overall, Styles.button, { width: "auto" }]}
+                      onPress={handleSignOutPress}
+                    >
+                      SIGN OUT
+                    </Button>
+                  </Layout>
+                ) : null}
               </Layout>
             </ScrollView>
           </Layout>
