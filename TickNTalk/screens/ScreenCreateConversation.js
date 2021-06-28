@@ -13,9 +13,6 @@ import { showMessage } from "react-native-flash-message";
 import Fire from "../firebase/Fire";
 import { emailToKey } from "../Utils/emailKeyConvert";
 import { useNavigation } from "@react-navigation/native";
-import { navigateAndReset } from "../Utils/navigation";
-import { useRealtimeFire } from "../hooks/useRealtimeFire";
-import { SafeView, Styles } from "../styles/Styles";
 import { matchPointUser } from "../Utils/search";
 import { SCREENS } from ".";
 
@@ -91,7 +88,7 @@ export default ScreenCreateConversation = () => {
           {
             text: "Cancel",
             style: "cancel",
-            onPress: () => {},
+            onPress: () => { },
           },
           {
             text: "No",
@@ -113,7 +110,7 @@ export default ScreenCreateConversation = () => {
           {
             text: "Cancel",
             style: "cancel",
-            onPress: () => {},
+            onPress: () => { },
           },
           {
             text: "Yes",
