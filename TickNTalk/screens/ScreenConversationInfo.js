@@ -1,15 +1,17 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import * as styles from "../shared/styles";
-import { ImageBackground, SafeAreaView, TouchableOpacity } from "react-native";
+import { ImageBackground, SafeAreaView, ScrollView, TouchableOpacity } from "react-native";
 import { useRealtimeFire } from "../hooks/useRealtimeFire";
 import { useSignedIn } from "../hooks/useSignedIn";
 import Fire from "../firebase/Fire";
-import { Layout, Text, Button, Input } from "@ui-kitten/components";
+import { Layout, Text, Button, Input, Card } from "@ui-kitten/components";
 import { BasicImage } from "../components/BasicImage";
 import { pickProcess, uploadPhotoAndGetLink } from "../Utils/uploadPhotoVideo";
 import { Ionicons } from "@expo/vector-icons";
 import { Styles } from "../styles/Styles";
 import { emailToKey } from "../Utils/emailKeyConvert";
+import { useFiredux } from "../hooks/useFiredux";
+import { MessageCard } from "../components/MessageCard";
 
 const ScreenConversationInfo = ({ route }) => {
   const { user } = useSignedIn();
@@ -52,6 +54,26 @@ const ScreenConversationInfo = ({ route }) => {
       () => { }
     );
   };
+
+  const renderListMembers = () => {
+    return (
+      <ScrollView>
+        <Layout style={{ flex: 1 }}>
+          {listMembers?.map(member => {
+            return (<MessageCard
+              containerStyle={{ flex: 9, justifyContent: "flex-start" }}
+              name={`${member?.firstName} ${member?.lastName} (${member.displayName})`}
+              lastestChat={member?.email === conversation.owner ? "Owner" : "Member"}
+              ImageSize={60}
+              imageSource={member?.avaUrl ?? "../assets/bg.png"}
+              isRead={member?.email === conversation.owner}
+            />)
+          })}
+        </Layout>
+      </ScrollView>
+    )
+  }
+
   return (
     <Layout style={{ flex: 1 }}>
       <ImageBackground
@@ -120,6 +142,17 @@ const ScreenConversationInfo = ({ route }) => {
                   <Ionicons name="pencil" size={24} color="black" />
                 )}
               </Button>
+            </Layout>
+            <Layout
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                marginTop: 20,
+                alignItems: "center",
+              }}
+            >
+              <Text>Members:</Text>
+              {renderListMembers()}
             </Layout>
           </Layout>
         </SafeAreaView>

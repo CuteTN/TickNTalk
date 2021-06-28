@@ -20,6 +20,9 @@ import { matchPointConversation } from "../Utils/search";
 import {
   checkConversationHasUser,
   checkConversationSeenByUser,
+  getOtherUsersInConversation,
+  handleSeenByUser,
+  handleUnseenByUser,
 } from "../Utils/conversation";
 import { useSignedIn } from "../hooks/useSignedIn";
 import {
@@ -28,46 +31,49 @@ import {
   ModalButton,
   SlideAnimation,
 } from "react-native-modals";
+import { handleBlockUser, handleUnblockUser } from "../Utils/user";
+import { useRef } from "react";
 
-const DATA = [
-  {
-    text: "BLOCK",
-    func: () => {},
-  },
-  {
-    text: "BLOCK AGAIN",
-    func: () => {},
-  },
-  {
-    text: "BLOCK ONE MORE TIME",
-    func: () => {},
-  },
-];
+// const DATA = [
+//   {
+//     text: "BLOCK",
+//     onPress: () => console.log("block press"),
+//   },
+//   {
+//     text: "BLOCK AGAIN",
+//     onPress: () => console.log("block again press"),
+//   },
+//   {
+//     text: "BLOCK ONE MORE TIME",
+//     onPress: () => console.log("block again press"),
+//   },
+// ];
 
 const ScreenConversations = () => {
   const [searchText, setSearchText] = useState("");
   const [modalVisibility, setModalVisibility] = useState(false);
+  const longPressedConversationId = useRef("");
 
-  function setModalContent(newData) {
+  const [modalContent, setModalContent] = useState([]);
+
+  function convertToModalContent(newData) {
     //newData is an array contains of [{title, function}]
     const renderItem = ({ item }) => (
       <Button
         appearance="ghost"
-        onPress={() => {
-          item.func;
-        }}
+        onPress={item.onPress}
       >
         {item.text}
       </Button>
     );
-    console.log(newData);
+    // console.log(newData);
     return (
       <ModalContent>
         <FlatList data={newData} renderItem={renderItem} />
       </ModalContent>
     );
   }
-  const modalContent = setModalContent(DATA);
+  // const modalContent = setModalContent(DATA);
 
   const navigation = useNavigation();
   const listRawConversations = useFiredux("conversation") ?? {};
@@ -110,9 +116,50 @@ const ScreenConversations = () => {
   const handleMessagePress = (conversationId) => {
     navigation.navigate(SCREENS.message.name, { conversationId });
   };
+
+
   const handleMessageLongPress = (conversationId) => {
+    longPressedConversationId.current = conversationId;
     setModalVisibility(true);
   };
+
+  useEffect(() => {
+    if (!modalVisibility)
+      return;
+
+    const conversationId = longPressedConversationId.current;
+
+    const selectedConversation = listRawConversations?.[conversationId];
+    const seenByThisUser = checkConversationSeenByUser(user?.email, selectedConversation);
+
+    if (!selectedConversation)
+      return;
+
+    let modalData = [];
+
+    if (selectedConversation.type === "private") {
+      const otherUserEmail = getOtherUsersInConversation(user?.email, selectedConversation)?.[0];
+      const blockedByThisUser = Object.values(user?.blockedUsers ?? {}).includes(otherUserEmail);
+
+      modalData.push(
+        {
+          text: (blockedByThisUser ? "Unblock" : "Block") + " this user",
+          onPress: () => (blockedByThisUser ? handleUnblockUser : handleBlockUser)(user?.email, otherUserEmail),
+        }
+      )
+    }
+
+    modalData.push(
+      {
+        text: `Mark as ${(seenByThisUser ? "unread" : "read")}`,
+        onPress: () => (seenByThisUser ? handleUnseenByUser : handleSeenByUser)(user?.email, conversationId, selectedConversation),
+      }
+    )
+
+    setModalContent(convertToModalContent(modalData));
+  }, [modalVisibility, listConversations, user]);
+
+
 
   const handleCreateConversationPress = () => {
     navigation.navigate(SCREENS.createConversation.name);

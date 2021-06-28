@@ -37,7 +37,7 @@ import * as Icon from "../components/Icon";
 import * as Permissions from "expo-permissions";
 import { sendPushNotification } from "../Utils/PushNoti";
 import { emailToKey, keyToToken } from "../Utils/emailKeyConvert";
-import { checkConversationSeenByUser } from "../Utils/conversation";
+import { checkConversationSeenByUser, handleSeenByUser } from "../Utils/conversation";
 import { useFiredux } from "../hooks/useFiredux";
 import { BasicImage } from "../components/BasicImage";
 
@@ -123,19 +123,10 @@ const ScreenMessage = ({ route }) => {
   useEffect(() => {
     if (user?.email && conversation) {
       if (!checkConversationSeenByUser(user, conversation)) {
-        handleSeenByUser(user);
+        handleSeenByUser(user?.email, conversationId, conversation);
       }
     }
   }, [user, conversation]);
-
-  const handleSeenByUser = ({ email }) => {
-    const listSeenMembers = Object.values(conversation?.listSeenMembers ?? {});
-
-    if (!listSeenMembers.includes(email)) {
-      listSeenMembers.push(email);
-      Fire.update(`conversation/${conversationId}/`, { listSeenMembers });
-    }
-  };
 
   const handleInfoPress = (conversationId) => {
     //navigate to conversation info, for edit.
