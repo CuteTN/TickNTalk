@@ -85,7 +85,8 @@ const ScreenConversations = () => {
   const listConversations = React.useMemo(() => {
     return Object.entries(listRawConversations ?? {})
       .filter((c) => checkConversationHasUser(user?.email, c[1]))
-      .map((c) => ({ key: c[0], value: c[1] }));
+      .map((c) => ({ key: c[0], value: c[1] }))
+      .sort((c1, c2) => c2?.value?.lastestMessage?.createdAt - c1?.value?.lastestMessage?.createdAt);
   }, [listRawConversations, user]);
 
   // same as list conversation but is sorted to fit search text

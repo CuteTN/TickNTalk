@@ -66,7 +66,7 @@ const ScreenConversationInfo = ({ route }) => {
               lastestChat={member?.email === conversation.owner ? "Owner" : "Member"}
               ImageSize={60}
               imageSource={member?.avaUrl ?? "../assets/bg.png"}
-              isRead={member?.email === conversation.owner}
+              isRead={member?.email !== conversation.owner}
             />)
           })}
         </Layout>
