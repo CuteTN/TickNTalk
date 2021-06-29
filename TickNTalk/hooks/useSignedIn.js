@@ -94,5 +94,5 @@ export const useSignedIn = () => {
     return newValue;
   };
 
-  return { user, updateUser, status };
+  return { user, updateUser, status,token };
 };

@@ -39,11 +39,11 @@ import {
   SlideAnimation,
 } from "react-native-modals";
 import { pickProcess, uploadPhotoAndGetLink } from "../Utils/uploadPhotoVideo";
-import { emailToKey } from "../Utils/emailKeyConvert";
+import { emailToKey,tokenToKey } from "../Utils/emailKeyConvert";
 
 const ScreenMyProfile = () => {
   const navigation = useNavigation();
-  const { user, updateUser } = useSignedIn();
+  const { user, updateUser ,token} = useSignedIn();
   const [tempUser, setTempUser] = useState(null);
   const [editingMode, setEditingMode] = useState(false);
   const [modalVisibility, setModalVisibility] = useState(false);
@@ -126,11 +126,13 @@ const ScreenMyProfile = () => {
 
   const isSavable = () => checkEnoughUserInfo(tempUser).isValid;
 
-  const handleSignOutPress = () => {
-    Fire.signOut().then(({ successful, errorMessage }) => {
+  const handleSignOutPress = async () => {
+    await Fire.remove(`user/${emailToKey(user.email)}/tokens/${tokenToKey(token)}`);
+    await Fire.signOut().then(({ successful, errorMessage }) => {
       if (successful) {
         navigateAndReset(navigation, SCREENS.signIn.name);
         showMessage({ type: "success", message: `Sign out successfully!` });
+        
       }
       if (errorMessage) {
         showMessage({ type: "danger", message: errorMessage.message });
