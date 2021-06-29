@@ -3,16 +3,19 @@ import { Layout, Button, Divider } from "@ui-kitten/components";
 import * as styles from "../shared/styles";
 import { ImageBackground, SafeAreaView, TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { GiftedChat } from "react-native-gifted-chat";
 import {
-  GiftedChat,
-  Bubble,
-  Send,
-  InputToolbar,
-  Composer,
-  MessageImage,
-  FlatList,
-} from "react-native-gifted-chat";
-import { Video, Audio } from "expo-av";
+  renderActions,
+  renderBubble,
+  renderComposer,
+  renderMessageAudio,
+  renderInputToolbar,
+  renderSend,
+  renderMessageImage,
+  renderMessageVideo,
+  renderFooter,
+} from "../Utils/GiftedChatCustomize";
+import { Audio } from "expo-av";
 import { MessageCard } from "../components/MessageCard";
 import CameraPreview from "../components/CameraPreview";
 import VideoPreview from "../components/VideoPreview";
@@ -20,7 +23,6 @@ import { useRealtimeFire } from "../hooks/useRealtimeFire";
 import { useSignedIn } from "../hooks/useSignedIn";
 import Fire from "../firebase/Fire";
 import { CustomizedCamera } from "../components/CustomizedCamera";
-import { sizeFactor, windowWidth } from "../styles/Styles";
 import {
   pickProcess,
   uploadPhotoAndGetLink,
@@ -32,16 +34,18 @@ import * as MediaLibrary from "expo-media-library";
 import { Camera } from "expo-camera";
 import { SCREENS } from ".";
 import { BackAction } from "../components/TopNavigationBar";
-import { SafeView, Styles } from "../styles/Styles";
+import { SafeView } from "../styles/Styles";
 import * as Icon from "../components/Icon";
 import * as Permissions from "expo-permissions";
 import { sendPushNotification } from "../Utils/PushNoti";
 import { emailToKey, keyToToken } from "../Utils/emailKeyConvert";
-import { checkConversationSeenByUser, getConversationDisplayName, handleSeenByUser } from "../Utils/conversation";
+import {
+  checkConversationSeenByUser,
+  getConversationDisplayName,
+  handleSeenByUser,
+} from "../Utils/conversation";
 import { useFiredux } from "../hooks/useFiredux";
-import { BasicImage } from "../components/BasicImage";
-import { checkBlockedByUser } from "../Utils/user";
-import { showMessage } from "react-native-flash-message";
+import { recordingSettings } from "../Utils/MediaManager";
 
 const ScreenMessage = ({ route }) => {
   const navigation = useNavigation();
@@ -51,7 +55,6 @@ const ScreenMessage = ({ route }) => {
   const { user } = useSignedIn();
   const { conversationId } = route?.params ?? {};
   const [messages, updateMessages] = useState([]);
-  const [currentMessageText, updateText] = useState("");
   const [conversation] = useRealtimeFire("conversation", conversationId);
   const [justPressSend, setPress] = useState(false);
   const listAvaSeen = useMemo(() => {
@@ -86,36 +89,6 @@ const ScreenMessage = ({ route }) => {
   const [isExpanding, setExpand] = useState(false);
   //#endregion
 
-  const isMessageSendable = useMemo(
-    /**
-     * @returns {{isValid: boolean, message: string}}
-     */
-    () => {
-      if (conversation && listRawUsers) {
-        if (conversation.type === "private") {
-          const listMembers = Object.values(conversation.listMembers ?? {})
-            .map(email => emailToKey(email))
-            .map(key => listRawUsers[key]);
-
-          for (let i = 0; i <= 1; i++)
-            if (checkBlockedByUser(listMembers[i], listMembers[1 - i]?.email))
-              return {
-                isValid: false,
-                message: "This contact is not available now.",
-              }
-        }
-
-        return {
-          isValid: true,
-        };
-      }
-
-      return {
-        isValid: false,
-        message: "Something went wrong.",
-      }
-    }, [listRawUsers, conversation]);
-
   //getAll message of this conversation
   useEffect(() => {
     //console.log(conversation);
@@ -132,7 +105,10 @@ const ScreenMessage = ({ route }) => {
           Id: child.key,
           data: child.data,
         };
-        if (msg.data) msgs.push(msg.data);
+        if (msg.data) {
+          let data = msg.data;
+          msgs.push(data);
+        }
       });
     }
     msgs.sort((x, y) => x.createdAt < y.createdAt);
@@ -150,6 +126,28 @@ const ScreenMessage = ({ route }) => {
     //   setPress(false);
     // }
   };
+  useEffect(() => {
+    if (conversation?.listMessages) {
+      let listMess = Object.values(conversation.listMessages);
+      listMess.forEach((child) => {
+        let msg = {
+          Id: child.key,
+          data: child.data,
+        };
+        if (msg.data) {
+          let data = msg.data;
+          if (data.user._id === user?.email) {
+            data.user.name = user?.displayName ?? user?.firstName + " " + user?.lastName;
+            data.user.avatar = user?.avaUrl;
+          }
+          Fire.update(`conversation/${conversationId}/listMessages/${msg.Id}/`,{data}).then(()=>{
+            console.log(data);
+          })
+        }
+      });
+    }
+    
+  }, [user]);
 
   // seen message when user is in this conversation
   useEffect(() => {
@@ -176,13 +174,15 @@ const ScreenMessage = ({ route }) => {
         var pushContent = {
           message: message.text,
           data: conversationId,
-          sender: user?.displayName ? user.displayName : `${user?.firstName} ${user?.lastName}`,
+          sender: user?.displayName
+            ? user.displayName
+            : `${user?.firstName} ${user?.lastName}`,
         };
         if (countMember > 2) pushContent.sender += " to " + conversation.name;
         let membertoKey = emailToKey(`${member}`);
         Fire.get(`user/${membertoKey}/tokens`).then((userToken) => {
           Object.keys(userToken).forEach((key) => {
-            sendPushNotification(keyToToken(key), pushContent).then(() => { });
+            sendPushNotification(keyToToken(key), pushContent).then(() => {});
           });
         });
       }
@@ -197,15 +197,6 @@ const ScreenMessage = ({ route }) => {
     voiceLink
   ) => {
     if (newMessages[0] === undefined) return;
-
-    if (!isMessageSendable.isValid) {
-      showMessage({
-        message: isMessageSendable.message,
-        type: "danger",
-      })
-
-      return;
-    }
 
     //#region upload image and video to Storage and then get link for realTime (if available)
     if (videoLink || imageLink || voiceLink) {
@@ -258,233 +249,6 @@ const ScreenMessage = ({ route }) => {
   };
 
   //#region Customize GiftedChat
-  // footer seen member
-  const renderFooter = (listAvaSeen) => {
-    return (
-      <Layout
-        style={{
-          width: "auto",
-          borderRadius: 15,
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "flex-end",
-          height: 32,
-          marginRight: 8,
-          backgroundColor: "transparent"
-        }}
-      >
-        {listAvaSeen.map((url) =>
-          <BasicImage
-            icon={20}
-            source={{ uri: url }}
-            borderRadius={100}
-          ></BasicImage>
-        )}
-      </Layout>
-    );
-  };
-
-  //Chat bubble
-  const renderBubble = (props) => {
-    return (
-      <Bubble
-        {...props}
-        wrapperStyle={{
-          right: {
-            backgroundColor: "lavender",
-          },
-          left: {
-            maxWidth: sizeFactor * 14,
-            backgroundColor: "whitesmoke",
-          },
-        }}
-        textStyle={{
-          right: {
-            color: "black",
-          },
-        }}
-      />
-    );
-  };
-
-  //send button
-  const renderSend = (props) => {
-    return (
-      <Send {...props}>
-        <Layout
-          style={{
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Icon.Send style={{ width: 32, height: 32 }} />
-        </Layout>
-      </Send>
-    );
-  };
-  // const renderLoading = (props) => {
-  //   return (
-  //     <View style={styles.loadingContainer}>
-  //       <ActivityIndicator size="large" color="#6646ee" />
-  //     </View>
-  //   );
-  // };
-
-  //text composer
-  const renderComposer = (props) => {
-    return (
-      <Composer
-        {...props}
-        multiline
-        textInputStyle={{
-          borderRadius: 8,
-          backgroundColor: "whitesmoke",
-          minWidth: "50%",
-          //height: 32,
-        }}
-        //placeholderTextColor={{ marginHorizontal: 128 }}
-        placeholder="Type your massage here..."
-      />
-    );
-  };
-
-  //textInput
-  const renderInputToolbar = (props) => {
-    return (
-      <InputToolbar
-        {...props}
-        containerStyle={{
-          //width: windowWidth,
-          //backgroundColor: "black",
-          alignItems: "center",
-          justifyContent: "center",
-          //padding:4,
-          //height: 48,
-          flexDirection: "row",
-        }}
-        primaryStyle={{
-          // borderRadius: 70 / 3,
-          width: windowWidth,
-          //backgroundColor: "red",
-          alignItems: "center",
-          //height: 48,
-          justifyContent: "space-between",
-          flexDirection: "row",
-          // width: sizeFactor * 15,
-        }}
-      />
-    );
-  };
-
-  //extend action: Image, Camera,...
-  const renderActions = (props) => {
-    return props.isExpanding === false ? (
-      <Button
-        size="tiny"
-        appearance="ghost"
-        onPress={props.onPressExpand}
-        style={{ alignItems: "center", justifyContent: "center" }}
-      >
-        <Icon.Add style={{ width: 24, height: 24 }} />
-      </Button>
-    ) : (
-      <Layout
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <Button
-          size="tiny"
-          appearance="ghost"
-          onPress={props.onPressCamera}
-          style={{ alignItems: "center", justifyContent: "center" }}
-        >
-          <Icon.Camera style={{ width: 24, height: 24 }} />
-        </Button>
-        <Button
-          size="tiny"
-          appearance="ghost"
-          onPress={props.onPressMedia}
-          style={{ alignItems: "center", justifyContent: "center" }}
-        >
-          <Icon.Image style={{ width: 24, height: 24 }} />
-        </Button>
-
-        <Button
-          size="tiny"
-          appearance="ghost"
-          onPress={props.onPressVoice}
-          style={{ alignItems: "center", justifyContent: "center" }}
-        >
-          {props.startRecord ? (
-            <Icon.StopVoice style={{ width: 24, height: 24 }} />
-          ) : (
-            <Icon.Voice style={{ width: 24, height: 24 }} />
-          )}
-        </Button>
-      </Layout>
-    );
-  };
-
-  //if message is an image
-  const renderMessageImage = (props) => {
-    return (
-      <MessageImage
-        {...props}
-        source={props.currentMessage.image}
-        imageStyle={{ width: 200, height: 200 }}
-      />
-    );
-  };
-
-  //if message is a video
-  const renderMessageVideo = (props) => {
-    return (
-      <Video
-        resizeMode="contain"
-        useNativeControls
-        shouldPlay={false}
-        source={{ uri: props.currentMessage.video }}
-        style={{ width: 200, height: 300 }}
-      />
-    );
-  };
-
-  //if message is audio
-  const renderMessageAudio = (props) => {
-    const uri = props.currentMessage.audio;
-    const soundObject = new Audio.Sound();
-    const startSound = async () => {
-      try {
-        await soundObject.loadAsync({ uri });
-        await soundObject.playAsync();
-      } catch (error) {
-        console.log("error:", error);
-      }
-    };
-    const stopSound = async () => {
-      await soundObject.stopAsync();
-    };
-    return props.isPlayingAudio ? (
-      <Button
-        onPress={() => {
-          stopSound(), props.setPlayingAudio();
-        }}
-      >
-        <Icon.Stop style={{ width: 24, height: 24 }} />
-      </Button>
-    ) : (
-      <Button
-        onPress={() => {
-          startSound(), props.setPlayingAudio();
-        }}
-      >
-        <Icon.Play style={{ width: 24, height: 24 }} />
-      </Button>
-    );
-  };
   //imageButton pressed
   const MediaSend = async () => {
     // updateText("1 media added");
@@ -563,7 +327,9 @@ const ScreenMessage = ({ route }) => {
       user: {
         _id: `${user.email}`,
         avatar: `${user.avaUrl}`,
-        name: user?.displayName ? user.displayName : `${user?.firstName} ${user?.lastName}`,
+        name: user?.displayName
+          ? user.displayName
+          : `${user?.firstName} ${user?.lastName}`,
       },
     };
     let message = [];
@@ -642,27 +408,6 @@ const ScreenMessage = ({ route }) => {
 
   //#endregion
   //#region  Upload voice
-  const recordingSettings = {
-    android: {
-      extension: ".m4a",
-      outputFormat: Audio.RECORDING_OPTION_ANDROID_OUTPUT_FORMAT_MPEG_4,
-      audioEncoder: Audio.RECORDING_OPTION_ANDROID_AUDIO_ENCODER_AAC,
-      sampleRate: 44100,
-      numberOfChannels: 2,
-      bitRate: 128000,
-    },
-    ios: {
-      extension: ".m4a",
-      outputFormat: Audio.RECORDING_OPTION_IOS_OUTPUT_FORMAT_MPEG4AAC,
-      audioQuality: Audio.RECORDING_OPTION_IOS_AUDIO_QUALITY_HIGH,
-      sampleRate: 44100,
-      numberOfChannels: 2,
-      bitRate: 128000,
-      linearPCMBitDepth: 16,
-      linearPCMIsBigEndian: false,
-      linearPCMIsFloat: false,
-    },
-  };
   const VoiceSend = async () => {
     let canSend = await preparedAudio();
     if (canSend) {
@@ -803,7 +548,11 @@ const ScreenMessage = ({ route }) => {
           <BackAction></BackAction>
           <MessageCard
             onPress={() => handleInfoPress(conversationId)}
-            name={getConversationDisplayName(user?.email, conversation, listRawUsers)}
+            name={getConversationDisplayName(
+              user?.email,
+              conversation,
+              listRawUsers
+            )}
             containerStyle={{ width: "60%", marginTop: 8 }}
             lastestChat="Last seen recently"
             ImageSize={48}
@@ -838,7 +587,9 @@ const ScreenMessage = ({ route }) => {
             user={{
               _id: user?.email,
               avatar: user?.avaUrl,
-              name: user?.displayName ? user.displayName : `${user?.firstName} ${user?.lastName}`,
+              name: user?.displayName
+                ? user.displayName
+                : `${user?.firstName} ${user?.lastName}`,
             }}
             alignTop
             // onInputTextChanged={()=>setExpand(false)}
