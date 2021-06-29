@@ -1,6 +1,6 @@
-import { Layout, Text, CheckBox } from "@ui-kitten/components";
-import React, { useEffect, useState } from "react";
-import { Alert, SafeAreaView, ScrollView } from "react-native";
+import { Layout, Text, CheckBox, Button } from "@ui-kitten/components";
+import React, { useEffect, useRef, useState } from "react";
+import { Alert, SafeAreaView, ScrollView, FlatList } from "react-native";
 import { SearchBar } from "react-native-elements";
 import * as styles from "../shared/styles";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -17,12 +17,71 @@ import { matchPointUser } from "../Utils/search";
 import { SCREENS } from ".";
 import { SafeView, windowWidth } from "../styles/Styles";
 import { TouchableOpacity } from "react-native-gesture-handler";
-import { checkBlockedByUser } from "../Utils/user";
+import { checkBlockedByUser, handleBlockUser, handleUnblockUser } from "../Utils/user";
+
+import {
+  BottomModal,
+  ModalContent,
+  ModalButton,
+  SlideAnimation,
+} from "react-native-modals";
 
 export default ScreenCreateConversation = () => {
   const { user } = useSignedIn();
   const rawUsers = useFiredux("user");
   const [searchText, setSearchText] = useState("");
+
+  const [modalVisibility, setModalVisibility] = useState(false);
+  const longPressedUserEmail = useRef("");
+
+  const [modalContent, setModalContent] = useState([]);
+
+  function convertToModalContent(newData) {
+    //newData is an array contains of [{title, function}]
+    const renderItem = ({ item }) => (
+      <Button
+        appearance="ghost"
+        onPress={item.onPress}
+      >
+        {item.text}
+      </Button>
+    );
+    // console.log(newData);
+    return (
+      <ModalContent>
+        <FlatList data={newData} renderItem={renderItem} />
+      </ModalContent>
+    );
+  }
+
+  const handleUserLongPress = (email) => {
+    longPressedUserEmail.current = email;
+    setModalVisibility(true);
+  };
+
+  useEffect(() => {
+    if (!modalVisibility)
+      return;
+
+    const email = longPressedUserEmail.current;
+
+    const selectedUser = rawUsers?.[emailToKey(email)];
+    const blockedByThisUser = Object.values(user?.blockedUsers ?? {}).includes(email);
+
+    if (!selectedUser)
+      return;
+
+    let modalData = [];
+
+    modalData.push(
+      {
+        text: (blockedByThisUser ? "Unblock" : "Block") + " this user",
+        onPress: () => (blockedByThisUser ? handleUnblockUser : handleBlockUser)(user?.email, email),
+      }
+    )
+
+    setModalContent(convertToModalContent(modalData));
+  }, [modalVisibility, rawUsers, user]);
 
   // object { userId: boolean }
   const [selectedUserEmails, setSelectedUserEmails] = useState({});
@@ -231,6 +290,7 @@ export default ScreenCreateConversation = () => {
                   width: "100%"
                 }}
                 onPress={() => handleToggleSelectedUser(user?.value?.email)}
+                onLongPress={() => handleUserLongPress(user?.value?.email)}
               >
                 <CheckBox
                   style={{ flex: 1, marginLeft: 30 }}
@@ -250,6 +310,21 @@ export default ScreenCreateConversation = () => {
             ))}
           </ScrollView>
         </Layout>
+        {/* MODAL */}
+        <BottomModal
+          visible={modalVisibility}
+          onTouchOutside={() => {
+            setModalVisibility(modalVisibility ? false : true);
+          }}
+          modalAnimation={
+            new SlideAnimation({
+              slideFrom: "bottom",
+            })
+          }
+          swipeDirection={["up", "down"]}
+        >
+          {modalContent}
+        </BottomModal>
       </Layout>
     </SafeAreaView>
   );
