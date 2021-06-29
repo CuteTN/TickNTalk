@@ -19,6 +19,7 @@ import { Styles } from "../styles/Styles";
 import { emailToKey } from "../Utils/emailKeyConvert";
 import { useFiredux } from "../hooks/useFiredux";
 import { MessageCard } from "../components/MessageCard";
+import { useNavigation } from "@react-navigation/native";
 
 import {
   BottomModal,
@@ -28,6 +29,7 @@ import {
 } from "react-native-modals";
 import { handleRemoveMember } from "../Utils/conversation";
 import { handleBlockUser, handleUnblockUser } from "../Utils/user";
+import { SCREENS } from ".";
 
 const ScreenConversationInfo = ({ route }) => {
   const { user } = useSignedIn();
@@ -37,6 +39,7 @@ const ScreenConversationInfo = ({ route }) => {
   const [isEditName, setEdit] = useState(false);
   const [cName, updateName] = useState("");
   const listRawUsers = useFiredux("user") ?? {};
+  const navigation = useNavigation();
 
   useEffect(() => {
     updateName(conversation?.name);
@@ -87,7 +90,7 @@ const ScreenConversationInfo = ({ route }) => {
     const renderItem = ({ item }) => (
       <Button
         appearance="ghost"
-        onPress={item.onPress}
+        onPress={() => { item.onPress(); setModalVisibility(false) }}
       >
         {item.text}
       </Button>
@@ -166,7 +169,10 @@ const ScreenConversationInfo = ({ route }) => {
         {
           text: "OK",
           style: "default",
-          onPress: () => Fire.update(`conversation/${conversationId}`, { owner: email }),
+          onPress: () => {
+            if (listMembers.includes)
+              Fire.update(`conversation/${conversationId}`, { owner: email })
+          },
         },
       ]
     )
@@ -214,6 +220,15 @@ const ScreenConversationInfo = ({ route }) => {
       </ScrollView>
     );
   };
+
+  const canAddMembers = useMemo(() => {
+    return conversation && user &&
+      (conversation?.type === "group") && (conversation?.owner === user?.email)
+  }, [user, conversation])
+
+  const handleAddMembersPress = () => {
+    navigation.navigate(SCREENS.createConversation.name, { editingConversationId: conversationId })
+  }
 
   return (
     <Layout style={{ flex: 1 }}>
@@ -283,12 +298,19 @@ const ScreenConversationInfo = ({ route }) => {
                 flexDirection: "column",
                 marginTop: 20,
                 alignItems: "center",
+                justifyContent: "flex-start"
               }}
             >
               <Text>Members:</Text>
+              {canAddMembers &&
+                <Button onPress={handleAddMembersPress}>
+                  Add members
+                </Button>
+              }
               {renderListMembers()}
             </Layout>
           </Layout>
+
         </SafeAreaView>
         {/* MODAL */}
         <BottomModal

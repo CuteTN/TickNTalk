@@ -50,7 +50,7 @@ const ScreenConversations = () => {
     const renderItem = ({ item }) => (
       <Button
         appearance="ghost"
-        onPress={item.onPress}
+        onPress={() => { item.onPress(); setModalVisibility(false) }}
       >
         {item.text}
       </Button>

@@ -46,6 +46,8 @@ import {
 } from "../Utils/conversation";
 import { useFiredux } from "../hooks/useFiredux";
 import { recordingSettings } from "../Utils/MediaManager";
+import { checkBlockedByUser } from "../Utils/user";
+import { showMessage } from "react-native-flash-message";
 
 const ScreenMessage = ({ route }) => {
   const navigation = useNavigation();
@@ -88,6 +90,38 @@ const ScreenMessage = ({ route }) => {
   const [isRecording, setRecording] = useState(false);
   const [isExpanding, setExpand] = useState(false);
   //#endregion
+
+  const isMessageSendable = useMemo(
+    /**
+     * @returns {{isValid: boolean, message: string}}
+     */
+    () => {
+      if (conversation && listRawUsers) {
+        if (conversation.type === "private") {
+          const listMembers = Object.values(conversation.listMembers ?? {})
+            .map(email => emailToKey(email))
+            .map(key => listRawUsers[key]);
+
+          for (let i = 0; i <= 1; i++)
+            if (checkBlockedByUser(listMembers[i], listMembers[1 - i]?.email))
+              return {
+                isValid: false,
+                message: "This contact is not available now.",
+              }
+        }
+
+        return {
+          isValid: true,
+        };
+      }
+
+      return {
+        isValid: false,
+        message: "Something went wrong.",
+      }
+    },
+    [listRawUsers, conversation]
+  );
 
   //getAll message of this conversation
   useEffect(() => {
@@ -140,13 +174,13 @@ const ScreenMessage = ({ route }) => {
             data.user.name = user?.displayName ?? user?.firstName + " " + user?.lastName;
             data.user.avatar = user?.avaUrl;
           }
-          Fire.update(`conversation/${conversationId}/listMessages/${msg.Id}/`,{data}).then(()=>{
+          Fire.update(`conversation/${conversationId}/listMessages/${msg.Id}/`, { data }).then(() => {
             console.log(data);
           })
         }
       });
     }
-    
+
   }, [user]);
 
   // seen message when user is in this conversation
@@ -182,7 +216,7 @@ const ScreenMessage = ({ route }) => {
         let membertoKey = emailToKey(`${member}`);
         Fire.get(`user/${membertoKey}/tokens`).then((userToken) => {
           Object.keys(userToken).forEach((key) => {
-            sendPushNotification(keyToToken(key), pushContent).then(() => {});
+            sendPushNotification(keyToToken(key), pushContent).then(() => { });
           });
         });
       }
@@ -197,6 +231,15 @@ const ScreenMessage = ({ route }) => {
     voiceLink
   ) => {
     if (newMessages[0] === undefined) return;
+
+    if (!isMessageSendable.isValid) {
+      showMessage({
+        message: isMessageSendable.message,
+        type: "danger",
+      })
+
+      return;
+    }
 
     //#region upload image and video to Storage and then get link for realTime (if available)
     if (videoLink || imageLink || voiceLink) {

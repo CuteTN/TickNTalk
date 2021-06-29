@@ -1,5 +1,5 @@
 import { Layout, Text, CheckBox, Button } from "@ui-kitten/components";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Alert, SafeAreaView, ScrollView, FlatList } from "react-native";
 import { SearchBar } from "react-native-elements";
 import * as styles from "../shared/styles";
@@ -25,9 +25,21 @@ import {
   ModalButton,
   SlideAnimation,
 } from "react-native-modals";
+import { useRealtimeFire } from "../hooks/useRealtimeFire";
 
-export default ScreenCreateConversation = () => {
+export default ScreenCreateConversation = ({ route }) => {
   const { user } = useSignedIn();
+
+  const { editingConversationId } = route?.params ?? {};
+  const [editingConversation] = useRealtimeFire("conversation", editingConversationId);
+  const isEditingMode = useMemo(() => Boolean(editingConversation));
+  const editingConversationMembers = useMemo(() => {
+    if (!editingConversation)
+      return [];
+
+    return Object.values(editingConversation?.listMembers ?? {});
+  }, [editingConversation])
+
   const rawUsers = useFiredux("user");
   const [searchText, setSearchText] = useState("");
 
@@ -41,7 +53,7 @@ export default ScreenCreateConversation = () => {
     const renderItem = ({ item }) => (
       <Button
         appearance="ghost"
-        onPress={item.onPress}
+        onPress={() => { item.onPress(); setModalVisibility(false) }}
       >
         {item.text}
       </Button>
@@ -69,7 +81,7 @@ export default ScreenCreateConversation = () => {
     const blockedByThisUser = Object.values(user?.blockedUsers ?? {}).includes(email);
 
     if (!selectedUser)
-      return;
+      return [];
 
     let modalData = [];
 
@@ -94,17 +106,26 @@ export default ScreenCreateConversation = () => {
   /** list users after making into a list and filtered */
   const listUsers = React.useMemo(() => {
     if (user && rawUsers)
-      return Object.entries(rawUsers)
-        .map((entry) => ({ key: entry[0], value: entry[1] }))
-        .filter(
-          (u) =>
-            u.value.email !== user.email && checkEnoughUserInfo(u.value).isValid
-        )
-        .filter(
-          (u) =>
-            !checkBlockedByUser(u.value, user?.email)
-        );
-  }, [user, rawUsers]);
+      if (!(isEditingMode && (!editingConversationMembers)))
+        return Object.entries(rawUsers)
+          .map((entry) => ({ key: entry[0], value: entry[1] }))
+          .filter(
+            (u) =>
+              u.value.email !== user.email && checkEnoughUserInfo(u.value).isValid
+          )
+          .filter(
+            (u) =>
+              !checkBlockedByUser(u.value, user?.email)
+          )
+          .filter(
+            (u) => {
+              if (isEditingMode) {
+                return !editingConversationMembers.includes(u.value?.email);
+              } else
+                return true;
+            }
+          );
+  }, [user, rawUsers, isEditingMode, editingConversationMembers]);
 
   useEffect(() => {
     if (listUsers && selectedUserEmails) {
@@ -138,6 +159,13 @@ export default ScreenCreateConversation = () => {
     );
     listMembers.push(user.email);
 
+    if (isEditingMode) {
+      editingConversationMembers.forEach(
+        email => listMembers.push(email)
+      )
+      handleUpdateEditingConversationMembers(listMembers);
+      return;
+    }
     if (listMembers.length <= 1) {
       showMessage({
         type: "danger",
@@ -187,6 +215,19 @@ export default ScreenCreateConversation = () => {
       );
     }
   };
+
+  const handleUpdateEditingConversationMembers = (listMembers) => {
+    listMembers = [...new Set(listMembers)];
+    listMembers.sort((a, b) => a.localeCompare(b));
+
+    Fire.update(`conversation/${editingConversationId}`, { listMembers }).then(() => {
+      navigation.replace(SCREENS.message.name, { conversationId: editingConversationId });
+      showMessage({
+        message: "Conversation's members updated!",
+        type: "success",
+      })
+    })
+  }
 
   /**
    * @param {[string]} listMembers
@@ -240,7 +281,7 @@ export default ScreenCreateConversation = () => {
 
   return (
     <SafeAreaView style={SafeView}>
-      <TopNavigationBar title="Create Conversation" />
+      <TopNavigationBar title={isEditingMode ? "Add members" : "Create conversation"} />
       <Layout style={{ flex: 1 }}>
         <Layout style={[styles.center]}>
           <Layout
