@@ -40,6 +40,8 @@ import { emailToKey, keyToToken } from "../Utils/emailKeyConvert";
 import { checkConversationSeenByUser, getConversationDisplayName, handleSeenByUser } from "../Utils/conversation";
 import { useFiredux } from "../hooks/useFiredux";
 import { BasicImage } from "../components/BasicImage";
+import { checkBlockedByUser } from "../Utils/user";
+import { showMessage } from "react-native-flash-message";
 
 const ScreenMessage = ({ route }) => {
   const navigation = useNavigation();
@@ -83,6 +85,36 @@ const ScreenMessage = ({ route }) => {
   const [isRecording, setRecording] = useState(false);
   const [isExpanding, setExpand] = useState(false);
   //#endregion
+
+  const isMessageSendable = useMemo(
+    /**
+     * @returns {{isValid: boolean, message: string}}
+     */
+    () => {
+      if (conversation && listRawUsers) {
+        if (conversation.type === "private") {
+          const listMembers = Object.values(conversation.listMembers ?? {})
+            .map(email => emailToKey(email))
+            .map(key => listRawUsers[key]);
+
+          for (let i = 0; i <= 1; i++)
+            if (checkBlockedByUser(listMembers[i], listMembers[1 - i]?.email))
+              return {
+                isValid: false,
+                message: "This contact is not available now.",
+              }
+        }
+
+        return {
+          isValid: true,
+        };
+      }
+
+      return {
+        isValid: false,
+        message: "Something went wrong.",
+      }
+    }, [listRawUsers, conversation]);
 
   //getAll message of this conversation
   useEffect(() => {
@@ -165,6 +197,15 @@ const ScreenMessage = ({ route }) => {
     voiceLink
   ) => {
     if (newMessages[0] === undefined) return;
+
+    if (!isMessageSendable.isValid) {
+      showMessage({
+        message: isMessageSendable.message,
+        type: "danger",
+      })
+
+      return;
+    }
 
     //#region upload image and video to Storage and then get link for realTime (if available)
     if (videoLink || imageLink || voiceLink) {

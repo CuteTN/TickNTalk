@@ -28,3 +28,10 @@ export const handleUnblockUser = async (blockingEmail, blockedEmail) => {
 
   await Fire.set(`user/${userKey}/blockedUsers`, listBlocked)
 }
+
+export const checkBlockedByUser = (blockingUser, blockedEmail) => {
+  if (!(blockedEmail && blockingUser))
+    return undefined;
+
+  return Object.values(blockingUser?.blockedUsers ?? {}).includes(blockedEmail);
+}

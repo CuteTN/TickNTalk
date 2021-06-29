@@ -17,6 +17,7 @@ import { matchPointUser } from "../Utils/search";
 import { SCREENS } from ".";
 import { SafeView, windowWidth } from "../styles/Styles";
 import { TouchableOpacity } from "react-native-gesture-handler";
+import { checkBlockedByUser } from "../Utils/user";
 
 export default ScreenCreateConversation = () => {
   const { user } = useSignedIn();
@@ -39,6 +40,10 @@ export default ScreenCreateConversation = () => {
         .filter(
           (u) =>
             u.value.email !== user.email && checkEnoughUserInfo(u.value).isValid
+        )
+        .filter(
+          (u) =>
+            !checkBlockedByUser(u.value, user?.email)
         );
   }, [user, rawUsers]);
 
@@ -160,17 +165,18 @@ export default ScreenCreateConversation = () => {
     }
   };
 
-  const handleCreateGroup = (listMembers) => {
-    listMembers?.sort?.();
-
-    let type = "group";
-  };
-
   const handleToggleSelectedUser = (email) => {
-    setSelectedUserEmails((prev) => ({
-      ...prev,
-      [email]: prev[email] ? false : true,
-    }));
+    if (!checkBlockedByUser(user, email)) {
+      setSelectedUserEmails((prev) => ({
+        ...prev,
+        [email]: prev[email] ? false : true,
+      }));
+    } else {
+      showMessage({
+        message: "You blocked this user.",
+        type: "danger",
+      })
+    }
   };
 
   return (
