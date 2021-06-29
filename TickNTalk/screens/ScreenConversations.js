@@ -20,6 +20,7 @@ import { matchPointConversation } from "../Utils/search";
 import {
   checkConversationHasUser,
   checkConversationSeenByUser,
+  getConversationDisplayName,
   getOtherUsersInConversation,
   handleSeenByUser,
   handleUnseenByUser,
@@ -223,7 +224,7 @@ const ScreenConversations = () => {
                     onLongPress={() => {
                       handleMessageLongPress(conversation.key);
                     }}
-                    name={conversation.value.name}
+                    name={getConversationDisplayName(user?.email, conversation.value, listRawUsers)}
                     lastestChat={dataToText_LastestMessage(
                       conversation.value.lastestMessage
                     )}

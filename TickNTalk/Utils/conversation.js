@@ -1,4 +1,5 @@
 import Fire from "../firebase/Fire";
+import { emailToKey } from "./emailKeyConvert";
 
 /**
  * @param {string} email 
@@ -33,6 +34,26 @@ export const handleUnseenByUser = async (email, conversationId, conversation) =>
     await Fire.update(`conversation/${conversationId}/`, { listSeenMembers });
   }
 };
+
+export const getConversationDisplayName = (currentEmail, conversation, rawUsers) => {
+  if (!(currentEmail && conversation && rawUsers))
+    return "";
+
+  if (conversation?.name)
+    return conversation?.name;
+
+  if (conversation.type === "private") {
+    const otherUserEmail = getOtherUsersInConversation(currentEmail, conversation)[0];
+    const otherUser = rawUsers?.[emailToKey(otherUserEmail)];
+
+    if (otherUser)
+      return otherUser.displayName;
+    else
+      return "TickNTalk user";
+  }
+
+  return "Untitled conversation";
+}
 
 /**
  * Useful when you don't want to include signed in account in the list of members 

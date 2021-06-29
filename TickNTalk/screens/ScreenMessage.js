@@ -37,7 +37,7 @@ import * as Icon from "../components/Icon";
 import * as Permissions from "expo-permissions";
 import { sendPushNotification } from "../Utils/PushNoti";
 import { emailToKey, keyToToken } from "../Utils/emailKeyConvert";
-import { checkConversationSeenByUser, handleSeenByUser } from "../Utils/conversation";
+import { checkConversationSeenByUser, getConversationDisplayName, handleSeenByUser } from "../Utils/conversation";
 import { useFiredux } from "../hooks/useFiredux";
 import { BasicImage } from "../components/BasicImage";
 
@@ -144,9 +144,9 @@ const ScreenMessage = ({ route }) => {
         var pushContent = {
           message: message.text,
           data: conversationId,
-          sender: user.firstName,
+          sender: user?.displayName ? user.displayName : `${user?.firstName} ${user?.lastName}`,
         };
-        if (countMember > 2) pushContent.sender += " tới " + conversation.name;
+        if (countMember > 2) pushContent.sender += " to " + conversation.name;
         let membertoKey = emailToKey(`${member}`);
         Fire.get(`user/${membertoKey}/tokens`).then((userToken) => {
           Object.keys(userToken).forEach((key) => {
@@ -522,7 +522,7 @@ const ScreenMessage = ({ route }) => {
       user: {
         _id: `${user.email}`,
         avatar: `${user.avaUrl}`,
-        name: `${user.firstName} ${user.lastName}`,
+        name: user?.displayName ? user.displayName : `${user?.firstName} ${user?.lastName}`,
       },
     };
     let message = [];
@@ -762,7 +762,7 @@ const ScreenMessage = ({ route }) => {
           <BackAction></BackAction>
           <MessageCard
             onPress={() => handleInfoPress(conversationId)}
-            name={conversation?.name}
+            name={getConversationDisplayName(user?.email, conversation, listRawUsers)}
             containerStyle={{ width: "60%", marginTop: 8 }}
             lastestChat="Last seen recently"
             ImageSize={48}
@@ -797,7 +797,7 @@ const ScreenMessage = ({ route }) => {
             user={{
               _id: user?.email,
               avatar: user?.avaUrl,
-              name: `${user?.firstName} ${user?.lastName}`,
+              name: user?.displayName ? user.displayName : `${user?.firstName} ${user?.lastName}`,
             }}
             alignTop
             // onInputTextChanged={()=>setExpand(false)}

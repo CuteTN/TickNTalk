@@ -8,7 +8,7 @@ import * as Notifications from 'expo-notifications'
 
 /**
  * Get/Set current user info
- * @returns {{user: any, updateUser: (newValue: any) => void, status: StatusType}}
+ * @returns {{user: any, updateUser: (newValue: any) => Promise, status: StatusType}}
  */
 export const useSignedIn = () => {
   // const { email } = useSelector(state => state.reducerSignedIn, shallowEqual);
@@ -40,11 +40,11 @@ export const useSignedIn = () => {
       setToken(token);
     });
     notificationListener.current =
-      Notifications.addNotificationReceivedListener((notification) => {});
+      Notifications.addNotificationReceivedListener((notification) => { });
 
     // This listener is fired whenever a user taps on or interacts with a notification (works when app is foregrounded, backgrounded, or killed)
     responseListener.current =
-      Notifications.addNotificationResponseReceivedListener((response) => {});
+      Notifications.addNotificationResponseReceivedListener((response) => { });
 
     return () => {
       Notifications.removeNotificationSubscription(
@@ -85,11 +85,13 @@ export const useSignedIn = () => {
       setStatus(checkEnoughUserInfo(user).isValid ? "SignedIn" : "NoInfo");
   }, user);
 
-  const updateUser = (newValue) => {
+  const updateUser = async (newValue) => {
     if (email) {
       const userId = emailToKey(email);
-      Fire.update(`user/${userId}`, newValue);
+      await Fire.update(`user/${userId}`, newValue);
     }
+
+    return newValue;
   };
 
   return { user, updateUser, status };

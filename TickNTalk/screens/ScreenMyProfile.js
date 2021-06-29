@@ -73,10 +73,14 @@ const ScreenMyProfile = () => {
   const handleSaveChangesPress = () => {
     if (isSavable()) {
       setEditingMode(false);
-      if (!tempUser.avaUrl) 
-      tempUser.avaUrl="https://firebasestorage.googleapis.com/v0/b/tickntalk2.appspot.com/o/avatar.png?alt=media&token=394b1a98-93f2-4c77-ab68-226fb5f82ce7";
-      updateUser(tempUser);
-      navigation.navigate(SCREENS.master.name);
+      if (!tempUser.avaUrl)
+        tempUser.avaUrl = "https://firebasestorage.googleapis.com/v0/b/tickntalk2.appspot.com/o/avatar.png?alt=media&token=394b1a98-93f2-4c77-ab68-226fb5f82ce7";
+      updateUser(tempUser).then(() => {
+        showMessage({
+          type: "success",
+          message: "Your information has been saved!",
+        })
+      });
     } else {
       showMessage({
         type: "danger",
@@ -155,6 +159,15 @@ const ScreenMyProfile = () => {
                     label={"Last name"}
                     value={tempUser?.lastName}
                     onChangeText={setTempUserFieldFunc("lastName")}
+                  />
+                </Layout>
+
+                <Layout style={rowStyle}>
+                  <Input
+                    style={{ flex: 1 }}
+                    label={"Display name"}
+                    value={tempUser?.displayName}
+                    onChangeText={setTempUserFieldFunc("displayName")}
                   />
                 </Layout>
 
