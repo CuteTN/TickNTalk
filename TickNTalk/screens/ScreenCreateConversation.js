@@ -75,10 +75,10 @@ export default ScreenCreateConversation = ({ route }) => {
     if (!modalVisibility)
       return;
 
-    const email = longPressedUserEmail.current;
+    const selectedEmail = longPressedUserEmail.current;
 
-    const selectedUser = rawUsers?.[emailToKey(email)];
-    const blockedByThisUser = Object.values(user?.blockedUsers ?? {}).includes(email);
+    const selectedUser = rawUsers?.[emailToKey(selectedEmail)];
+    const blockedByThisUser = Object.values(user?.blockedUsers ?? {}).includes(selectedEmail);
 
     if (!selectedUser)
       return [];
@@ -88,7 +88,16 @@ export default ScreenCreateConversation = ({ route }) => {
     modalData.push(
       {
         text: (blockedByThisUser ? "Unblock" : "Block") + " this user",
-        onPress: () => (blockedByThisUser ? handleUnblockUser : handleBlockUser)(user?.email, email),
+        onPress: () => {
+          if (!blockedByThisUser) {
+            setSelectedUserEmails(prev => ({
+              ...prev,
+              [selectedEmail]: false,
+            }))
+          }
+
+          (blockedByThisUser ? handleUnblockUser : handleBlockUser)(user?.email, selectedEmail)
+        },
       }
     )
 
