@@ -1,6 +1,11 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import * as styles from "../shared/styles";
-import { ImageBackground, SafeAreaView, ScrollView, TouchableOpacity } from "react-native";
+import {
+  ImageBackground,
+  SafeAreaView,
+  ScrollView,
+  TouchableOpacity,
+} from "react-native";
 import { useRealtimeFire } from "../hooks/useRealtimeFire";
 import { useSignedIn } from "../hooks/useSignedIn";
 import Fire from "../firebase/Fire";
@@ -30,20 +35,25 @@ const ScreenConversationInfo = ({ route }) => {
   const listMembers = useMemo(() => {
     if (conversation && listRawUsers) {
       const result = [];
-      Object.values(conversation?.listMembers).forEach(email => {
+      Object.values(conversation?.listMembers).forEach((email) => {
         const member = listRawUsers[emailToKey(email)];
-        if (member)
-          result.push(member)
-      })
+        if (member) result.push(member);
+      });
 
       return result;
     }
 
     return [];
-  }, [conversation, listRawUsers])
+  }, [conversation, listRawUsers]);
 
   const handleUpdateName = async () => {
-    Fire.set(`conversation/${conversationId}/name/`, cName).then(() => { });
+    if (isEditName) {
+      if (!cName) alert("Please enter a name");
+      else {
+        setEdit(false);
+        Fire.set(`conversation/${conversationId}/name/`, cName).then(() => {});
+      }
+    } else setEdit(true);
   };
   const handleUpdateAvatar = async () => {
     let image = await pickProcess(true);
@@ -51,7 +61,7 @@ const ScreenConversationInfo = ({ route }) => {
     let imageName = `Converstation_${conversationId}`;
     let downloadLink = await uploadPhotoAndGetLink(image.uri, imageName);
     Fire.set(`conversation/${conversationId}/avaUrl/`, downloadLink).then(
-      () => { }
+      () => {}
     );
   };
 
@@ -59,20 +69,24 @@ const ScreenConversationInfo = ({ route }) => {
     return (
       <ScrollView>
         <Layout style={{ flex: 1 }}>
-          {listMembers?.map(member => {
-            return (<MessageCard
-              containerStyle={{ flex: 9, justifyContent: "flex-start" }}
-              name={`${member?.firstName} ${member?.lastName} (${member.displayName})`}
-              lastestChat={member?.email === conversation.owner ? "Owner" : "Member"}
-              ImageSize={60}
-              imageSource={member?.avaUrl ?? "../assets/bg.png"}
-              isRead={member?.email !== conversation.owner}
-            />)
+          {listMembers?.map((member) => {
+            return (
+              <MessageCard
+                containerStyle={{ flex: 9, justifyContent: "flex-start" }}
+                name={`${member?.firstName} ${member?.lastName} (${member.displayName})`}
+                lastestChat={
+                  member?.email === conversation.owner ? "Owner" : "Member"
+                }
+                ImageSize={60}
+                imageSource={member?.avaUrl ?? "../assets/bg.png"}
+                isRead={member?.email !== conversation.owner}
+              />
+            );
           })}
         </Layout>
       </ScrollView>
-    )
-  }
+    );
+  };
 
   return (
     <Layout style={{ flex: 1 }}>
@@ -109,7 +123,7 @@ const ScreenConversationInfo = ({ route }) => {
                 justifyContent: "center",
                 alignItems: "center",
               }}
-            //onPress={handleAvatarPress}
+              //onPress={handleAvatarPress}
             >
               <BasicImage
                 icon={200}
@@ -128,14 +142,7 @@ const ScreenConversationInfo = ({ route }) => {
               <Button disabled={isEditName} onPress={handleUpdateAvatar}>
                 <Ionicons name="image" size={24} color="black" />
               </Button>
-              <Button
-                onPress={() => {
-                  if (isEditName) {
-                    setEdit(false);
-                    handleUpdateName();
-                  } else setEdit(true);
-                }}
-              >
+              <Button onPress={() => handleUpdateName()}>
                 {isEditName ? (
                   <Ionicons name="checkmark" size={24} color="black" />
                 ) : (

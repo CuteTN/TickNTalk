@@ -10,6 +10,7 @@ import {
   SelectItem,
   Datepicker,
   Divider,
+  Alert,
 } from "@ui-kitten/components";
 import { useSignedIn } from "../hooks/useSignedIn";
 import Fire from "../firebase/Fire";
@@ -23,6 +24,7 @@ import {
   RecyclerViewBackedScrollView,
   TouchableOpacity,
   SafeAreaView,
+  FlatList,
   ScrollView,
 } from "react-native";
 import { TopNavigationBar } from "../components/TopNavigationBar";
@@ -30,18 +32,97 @@ import { useRealtimeFire } from "../hooks/useRealtimeFire";
 import { navigateAndReset } from "../Utils/navigation";
 import { showMessage } from "react-native-flash-message";
 import { checkEnoughUserInfo } from "../Utils/FieldsValidating";
+import {
+  BottomModal,
+  ModalContent,
+  ModalButton,
+  SlideAnimation,
+} from "react-native-modals";
+import { pickProcess, uploadPhotoAndGetLink } from "../Utils/uploadPhotoVideo";
+import { emailToKey } from "../Utils/emailKeyConvert";
 
 const ScreenMyProfile = () => {
   const navigation = useNavigation();
   const { user, updateUser } = useSignedIn();
   const [tempUser, setTempUser] = useState(null);
   const [editingMode, setEditingMode] = useState(false);
+  const [modalVisibility, setModalVisibility] = useState(false);
+  const [modalContent, setModalContent] = useState([]);
+  const [avatarLink, updateAvatarLink] = useState(null);
+  //#region Upload ảnh từ thiết bị lên app (chưa lưu)
 
+  //#endregion
+
+  //#region Upload ảnh từ app lên Storage (lưu)
+
+  //Upload ảnh lên Storage
+  const uploadAvatarToFirebase = async (uri) => {
+    console.log(uri);
+    let downloadURL = await uploadPhotoAndGetLink(uri, user.email);
+    Fire.update(`user/${emailToKey(user.email)}`, {
+      avaUrl: downloadURL,
+    }).then(
+      () => {
+        Alert.alert(
+          "Success",
+          "Profile image updated successfully!",
+          [{ text: "OK", style: "default" }],
+          { cancelable: false }
+        );
+      },
+      (error) => {
+        Alert.alert(
+          "Error",
+          "Something went wrong",
+          [{ text: "OK", style: "cancel" }],
+          { cancelable: true }
+        );
+      }
+    );
+  };
+  // Nhấn vào nút Done
+  const handleUpdate = async () => {
+    setModalVisibility(false);
+    let result = await pickProcess(true);
+    updateAvatarLink(result.uri);
+    await uploadAvatarToFirebase(result.uri);
+  };
+  //#endregion
+  useEffect(() => {
+    if (!user) return;
+    updateAvatarLink(user?.avaUrl);
+  }, [user]);
   useEffect(() => {
     if (tempUser && editingMode) return;
     setTempUser(user);
     if (user && !checkEnoughUserInfo(user).isValid) setEditingMode(true);
   }, [user, editingMode]);
+
+  function convertToModalContent(newData) {
+    //newData is an array contains of [{title, function}]
+    const renderItem = ({ item }) => (
+      <Button appearance="ghost" onPress={item.onPress}>
+        {item.text}
+      </Button>
+    );
+    // console.log(newData);
+    return (
+      <ModalContent>
+        <FlatList data={newData} renderItem={renderItem} />
+      </ModalContent>
+    );
+  }
+
+  useEffect(() => {
+    if (!modalVisibility) return;
+    let modalData = [];
+    modalData.push({
+      text: `Update your avatar`,
+      onPress: () => handleUpdate(),
+    });
+
+    setModalContent(convertToModalContent(modalData));
+  }, [modalVisibility]);
 
   const isSavable = () => checkEnoughUserInfo(tempUser).isValid;
 
@@ -58,7 +139,8 @@ const ScreenMyProfile = () => {
   };
 
   const handleUpdateAvatarPress = () => {
-    if (editingMode) navigation.navigate(SCREENS.editUserAva.name);
+    //if (editingMode) navigation.navigate(SCREENS.editUserAva.name);
+    setModalVisibility(true);
   };
 
   const rowStyle = {
@@ -74,12 +156,13 @@ const ScreenMyProfile = () => {
     if (isSavable()) {
       setEditingMode(false);
       if (!tempUser.avaUrl)
-        tempUser.avaUrl = "https://firebasestorage.googleapis.com/v0/b/tickntalk2.appspot.com/o/avatar.png?alt=media&token=394b1a98-93f2-4c77-ab68-226fb5f82ce7";
+        tempUser.avaUrl =
+          "https://firebasestorage.googleapis.com/v0/b/tickntalk2.appspot.com/o/avatar.png?alt=media&token=394b1a98-93f2-4c77-ab68-226fb5f82ce7";
       updateUser(tempUser).then(() => {
         showMessage({
           type: "success",
           message: "Your information has been saved!",
-        })
+        });
       });
     } else {
       showMessage({
@@ -120,10 +203,7 @@ const ScreenMyProfile = () => {
               <Layout
                 style={([styles.center], { backgroundColor: "transparent" })}
               >
-                <TouchableOpacity
-                  enabled={editingMode}
-                  onPress={handleUpdateAvatarPress}
-                >
+                <TouchableOpacity onPress={handleUpdateAvatarPress}>
                   <Avatar
                     style={[
                       Styles.overall,
@@ -136,7 +216,7 @@ const ScreenMyProfile = () => {
                     ]}
                     size="large"
                     shape="round"
-                    source={{ uri: user?.avaUrl }}
+                    source={{ uri: avatarLink }}
                   />
                 </TouchableOpacity>
                 <Input
@@ -253,6 +333,22 @@ const ScreenMyProfile = () => {
             </ScrollView>
           </Layout>
         </SafeAreaView>
+
+        {/* MODAL */}
+        <BottomModal
+          visible={modalVisibility}
+          onTouchOutside={() => {
+            setModalVisibility(modalVisibility ? false : true);
+          }}
+          modalAnimation={
+            new SlideAnimation({
+              slideFrom: "bottom",
+            })
+          }
+          swipeDirection={["up", "down"]}
+        >
+          {modalContent}
+        </BottomModal>
       </ImageBackground>
     </Layout>
   );
