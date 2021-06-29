@@ -29,6 +29,8 @@ import {
   SlideAnimation,
 } from "react-native-modals";
 
+import { ScreenSplash } from "./ScreenSplash";
+
 const DATA = [
   {
     text: "BLOCK",
@@ -126,6 +128,14 @@ const ScreenConversations = () => {
     let result = new Date(value?.createdAt);
     return `${result.getHours()}:${result.getMinutes()}`;
   };
+
+  //LOADING EFFET
+  const [load, setLoad] = useSate(false);
+  useEffect(() => {
+    setLoad(true);
+  });
+
+  if (!load) return <ScreenSplash/>
   return (
     <SafeAreaView style={SafeView}>
       <TopNavigationBar title="Conversations" />
