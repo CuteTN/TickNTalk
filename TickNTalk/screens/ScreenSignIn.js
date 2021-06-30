@@ -28,7 +28,9 @@ export default ScreenSignIn = () => {
       }
     );
   };
-
+  const handleForgotPassword=()=>{
+    navigation.navigate(SCREENS.resetPassword.name)
+  }
   const handleSignUpPress = () => {
     navigation.navigate(SCREENS.signUp.name);
   };
@@ -59,7 +61,12 @@ export default ScreenSignIn = () => {
             secureTextEntry={true}
             onChangeText={setPassword}
           />
-
+          <Layout style={{ flexDirection: 'row', backgroundColor: 'transparent', alignSelf: 'center', alignItems: 'center' }}>
+            <Button onPress={handleForgotPassword}
+              appearance='ghost'>
+              Forgot Password?
+            </Button>
+          </Layout>
           <Button onPress={handleSignInPress}
             style={[Styles.overall, Styles.button]}>
             SIGN IN

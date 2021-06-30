@@ -46,6 +46,32 @@ class Fire {
     return { successful, errorMessage };
   };
 
+  static resetPassword = async (email) => {
+    let successful = false;
+    let errorMessage = undefined;
+    await firebase
+      .auth()
+      .sendPasswordResetEmail(email)
+      .then(function (user) {
+        log.logSuccess(`Send password reset to email successfully`);
+        successful = true;
+      })
+      .catch(function (error) {
+        console.error(error);
+        errorMessage = error;
+      });
+    return { successful, errorMessage };
+  };
+
+  static checkInputPasswordMatched = async (currentPassword) => {
+    let user = firebase.auth().currentUser;
+    let cred = firebase.auth.EmailAuthProvider.credential(
+      user.email,
+      currentPassword
+    );
+    return await user.reauthenticateWithCredential(cred);
+  };
+
   static signUpWithEmail = async (email, password) => {
     let successful = false;
     let errorMessage = undefined;
@@ -156,18 +182,16 @@ class Fire {
     try {
       const link = await ref.push(value);
 
-      log.logSuccess(
-        `New item was added successfully at ${refPath}: ${link}`
-      );
+      log.logSuccess(`New item was added successfully at ${refPath}: ${link}`);
 
       return link;
     } catch (error) {
       log.logError(
         `Could not add new item to ${refPath}:\n${value}\nError: ${error}`
-      )
+      );
 
       return null;
-    };
+    }
   };
 
   // set refPath new value, remove all old values

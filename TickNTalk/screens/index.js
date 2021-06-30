@@ -5,10 +5,11 @@ import ScreenMyProfile from "./ScreenMyProfile";
 import ScreenSignIn from "./ScreenSignIn";
 import ScreenSignUp from "./ScreenSignUp";
 import ScreenStartUp from "./ScreenStartUp";
-import ScreenEditUserAva from "./ScreenEditUserAva";
+import ScreenEditUserPassword from "./ScreenEditUserPassword";
 import ScreenMessage from "./ScreenMessage";
 import ScreenCreateConversation from "./ScreenCreateConversation";
 import ScreenConversationInfo from "./ScreenConversationInfo";
+import ScreenResetPassword from "./ScreenResetPassword";
 // [ADD NEW SCREEN]
 
 export const MASTER_TAB_SCREENS = {
@@ -51,9 +52,9 @@ export const SCREENS = {
     screen: ScreenEditUserInfo,
   },
 
-  editUserAva: {
-    name: "EditUserAva",
-    screen: ScreenEditUserAva,
+  editUserPassword: {
+    name: "EditUserPassword",
+    screen: ScreenEditUserPassword,
   },
 
   message: {
@@ -69,6 +70,11 @@ export const SCREENS = {
   conversationInfo: {
     name: "ConversationInfo",
     screen: ScreenConversationInfo,
+  },
+  
+  resetPassword: {
+    name: "ResetPassword",
+    screen: ScreenResetPassword,
   },
 
   ...MASTER_TAB_SCREENS,

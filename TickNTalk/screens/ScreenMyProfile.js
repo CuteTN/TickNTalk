@@ -39,19 +39,16 @@ import {
   SlideAnimation,
 } from "react-native-modals";
 import { pickProcess, uploadPhotoAndGetLink } from "../Utils/uploadPhotoVideo";
-import { emailToKey,tokenToKey } from "../Utils/emailKeyConvert";
+import { emailToKey, tokenToKey } from "../Utils/emailKeyConvert";
 
 const ScreenMyProfile = () => {
   const navigation = useNavigation();
-  const { user, updateUser ,token} = useSignedIn();
+  const { user, updateUser, token } = useSignedIn();
   const [tempUser, setTempUser] = useState(null);
   const [editingMode, setEditingMode] = useState(false);
   const [modalVisibility, setModalVisibility] = useState(false);
   const [modalContent, setModalContent] = useState([]);
   const [avatarLink, updateAvatarLink] = useState(null);
-  //#region Upload ảnh từ thiết bị lên app (chưa lưu)
-
-  //#endregion
 
   //#region Upload ảnh từ app lên Storage (lưu)
 
@@ -80,10 +77,11 @@ const ScreenMyProfile = () => {
       }
     );
   };
-  // Nhấn vào nút Done
+  // Nhấn vào nút update
   const handleUpdate = async () => {
     setModalVisibility(false);
     let result = await pickProcess(true);
+    console.log(result);
     updateAvatarLink(result.uri);
     await uploadAvatarToFirebase(result.uri);
   };
@@ -127,12 +125,13 @@ const ScreenMyProfile = () => {
   const isSavable = () => checkEnoughUserInfo(tempUser).isValid;
 
   const handleSignOutPress = async () => {
-    await Fire.remove(`user/${emailToKey(user.email)}/tokens/${tokenToKey(token)}`);
+    await Fire.remove(
+      `user/${emailToKey(user.email)}/tokens/${tokenToKey(token)}`
+    );
     await Fire.signOut().then(({ successful, errorMessage }) => {
       if (successful) {
         navigateAndReset(navigation, SCREENS.signIn.name);
         showMessage({ type: "success", message: `Sign out successfully!` });
-        
       }
       if (errorMessage) {
         showMessage({ type: "danger", message: errorMessage.message });
@@ -140,6 +139,9 @@ const ScreenMyProfile = () => {
     });
   };
 
+  const handleChangePassword=()=>{
+    navigation.navigate(SCREENS.editUserPassword.name);
+  }
   const handleUpdateAvatarPress = () => {
     //if (editingMode) navigation.navigate(SCREENS.editUserAva.name);
     setModalVisibility(true);
@@ -165,6 +167,7 @@ const ScreenMyProfile = () => {
           type: "success",
           message: "Your information has been saved!",
         });
+        navigation.replace(SCREENS.master.name);
       });
     } else {
       showMessage({
@@ -225,7 +228,7 @@ const ScreenMyProfile = () => {
                   style={Styles.overall}
                   label={"Email"}
                   value={tempUser?.email}
-                  editable={false}
+                  disabled={true}
                 />
 
                 <Layout style={rowStyle}>
@@ -312,6 +315,13 @@ const ScreenMyProfile = () => {
                     SAVE CHANGES
                   </Button>
                 )}
+
+                <Button
+                  style={[Styles.overall, Styles.button, { width: "auto" }]}
+                  onPress={handleChangePassword}
+                >
+                  CHANGE YOUR PASSWORD
+                </Button>
 
                 {!editingMode ? (
                   <Layout
