@@ -5,6 +5,7 @@ import { Text, View } from 'react-native'
 import { SCREENS } from '.';
 import { useSignedIn } from '../hooks/useSignedIn';
 import { navigateAndReset } from '../Utils/navigation';
+import { ScreenSplash } from './ScreenSplash';
 
 const ScreenStartUp = () => {
   const navigation = useNavigation();
@@ -25,9 +26,7 @@ const ScreenStartUp = () => {
   }, [status])
 
   return (
-    <View>
-      <Text>Loading...</Text>
-    </View>
+    <ScreenSplash />
   );
 }
 

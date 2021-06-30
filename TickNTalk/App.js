@@ -30,6 +30,7 @@ import FlashMessage from "react-native-flash-message";
 
 //react native modals
 import { ModalPortal } from "react-native-modals";
+import { ScreenSplash } from "./screens/ScreenSplash";
 
 LogBox.ignoreLogs(["Warning: ..."]); // Ignore log notification by message
 LogBox.ignoreAllLogs(); //Ignore all log notifications
@@ -48,6 +49,7 @@ export default function App() {
       <ApplicationProvider {...eva} theme={{ ...eva.light, ...theme }}>
         <Provider store={reduxStore}>
           <Layout style={styles.container}>
+            {/* <ScreenSplash/> */}
             <NavigationContainer>
               <Stack.Navigator
                 initialRouteName={SCREENS.startUp.name}
@@ -64,7 +66,7 @@ export default function App() {
             <StatusBar style="auto" /> */}
             {/* <TestFirebaseLoaded /> */}
           </Layout>
-          <ModalPortal/>
+          <ModalPortal />
         </Provider>
       </ApplicationProvider>
       <FlashMessage position="bottom" animated={true} />
