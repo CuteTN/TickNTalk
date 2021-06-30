@@ -57,7 +57,6 @@ const ScreenMyProfile = () => {
 
   //Upload ảnh lên Storage
   const uploadAvatarToFirebase = async (uri) => {
-    console.log(uri);
     let downloadURL = await uploadPhotoAndGetLink(uri, user.email);
     Fire.update(`user/${emailToKey(user.email)}`, {
       avaUrl: downloadURL,
@@ -71,6 +70,7 @@ const ScreenMyProfile = () => {
         );
       },
       (error) => {
+        updateAvatarLink(user.avaUrl);
         Alert.alert(
           "Error",
           "Something went wrong",

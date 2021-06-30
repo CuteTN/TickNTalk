@@ -175,7 +175,6 @@ const ScreenMessage = ({ route }) => {
             data.user.avatar = user?.avaUrl;
           }
           Fire.update(`conversation/${conversationId}/listMessages/${msg.Id}/`, { data }).then(() => {
-            console.log(data);
           })
         }
       });
