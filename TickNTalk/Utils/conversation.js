@@ -35,6 +35,15 @@ export const handleUnseenByUser = async (email, conversationId, conversation) =>
   }
 };
 
+export const handleRemoveMember = async (email, conversationId, conversation) => {
+  let listMembers = Object.values(conversation?.listMembers ?? {});
+
+  if (listMembers.includes(email) && (email !== conversationId.owner)) {
+    listMembers = listMembers.filter(e => e !== email)
+    await Fire.update(`conversation/${conversationId}/`, { listMembers });
+  }
+};
+
 export const getConversationDisplayName = (currentEmail, conversation, rawUsers) => {
   if (!(currentEmail && conversation && rawUsers))
     return "";

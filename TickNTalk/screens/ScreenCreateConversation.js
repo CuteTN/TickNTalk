@@ -1,6 +1,6 @@
-import { Layout, Text, CheckBox } from "@ui-kitten/components";
-import React, { useEffect, useState } from "react";
-import { Alert, SafeAreaView, ScrollView } from "react-native";
+import { Layout, Text, CheckBox, Button } from "@ui-kitten/components";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Alert, SafeAreaView, ScrollView, FlatList } from "react-native";
 import { SearchBar } from "react-native-elements";
 import * as styles from "../shared/styles";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -17,12 +17,92 @@ import { matchPointUser } from "../Utils/search";
 import { SCREENS } from ".";
 import { SafeView, windowWidth } from "../styles/Styles";
 import { TouchableOpacity } from "react-native-gesture-handler";
-import { checkBlockedByUser } from "../Utils/user";
+import { checkBlockedByUser, handleBlockUser, handleUnblockUser } from "../Utils/user";
 
-export default ScreenCreateConversation = () => {
+import {
+  BottomModal,
+  ModalContent,
+  ModalButton,
+  SlideAnimation,
+} from "react-native-modals";
+import { useRealtimeFire } from "../hooks/useRealtimeFire";
+
+export default ScreenCreateConversation = ({ route }) => {
   const { user } = useSignedIn();
+
+  const { editingConversationId } = route?.params ?? {};
+  const [editingConversation] = useRealtimeFire("conversation", editingConversationId);
+  const isEditingMode = useMemo(() => Boolean(editingConversation));
+  const editingConversationMembers = useMemo(() => {
+    if (!editingConversation)
+      return [];
+
+    return Object.values(editingConversation?.listMembers ?? {});
+  }, [editingConversation])
+
   const rawUsers = useFiredux("user");
   const [searchText, setSearchText] = useState("");
+
+  const [modalVisibility, setModalVisibility] = useState(false);
+  const longPressedUserEmail = useRef("");
+
+  const [modalContent, setModalContent] = useState([]);
+
+  function convertToModalContent(newData) {
+    //newData is an array contains of [{title, function}]
+    const renderItem = ({ item }) => (
+      <Button
+        appearance="ghost"
+        onPress={() => { item.onPress(); setModalVisibility(false) }}
+      >
+        {item.text}
+      </Button>
+    );
+    // console.log(newData);
+    return (
+      <ModalContent>
+        <FlatList data={newData} renderItem={renderItem} />
+      </ModalContent>
+    );
+  }
+
+  const handleUserLongPress = (email) => {
+    longPressedUserEmail.current = email;
+    setModalVisibility(true);
+  };
+
+  useEffect(() => {
+    if (!modalVisibility)
+      return;
+
+    const selectedEmail = longPressedUserEmail.current;
+
+    const selectedUser = rawUsers?.[emailToKey(selectedEmail)];
+    const blockedByThisUser = Object.values(user?.blockedUsers ?? {}).includes(selectedEmail);
+
+    if (!selectedUser)
+      return [];
+
+    let modalData = [];
+
+    modalData.push(
+      {
+        text: (blockedByThisUser ? "Unblock" : "Block") + " this user",
+        onPress: () => {
+          if (!blockedByThisUser) {
+            setSelectedUserEmails(prev => ({
+              ...prev,
+              [selectedEmail]: false,
+            }))
+          }
+
+          (blockedByThisUser ? handleUnblockUser : handleBlockUser)(user?.email, selectedEmail)
+        },
+      }
+    )
+
+    setModalContent(convertToModalContent(modalData));
+  }, [modalVisibility, rawUsers, user]);
 
   // object { userId: boolean }
   const [selectedUserEmails, setSelectedUserEmails] = useState({});
@@ -35,17 +115,26 @@ export default ScreenCreateConversation = () => {
   /** list users after making into a list and filtered */
   const listUsers = React.useMemo(() => {
     if (user && rawUsers)
-      return Object.entries(rawUsers)
-        .map((entry) => ({ key: entry[0], value: entry[1] }))
-        .filter(
-          (u) =>
-            u.value.email !== user.email && checkEnoughUserInfo(u.value).isValid
-        )
-        .filter(
-          (u) =>
-            !checkBlockedByUser(u.value, user?.email)
-        );
-  }, [user, rawUsers]);
+      if (!(isEditingMode && (!editingConversationMembers)))
+        return Object.entries(rawUsers)
+          .map((entry) => ({ key: entry[0], value: entry[1] }))
+          .filter(
+            (u) =>
+              u.value.email !== user.email && checkEnoughUserInfo(u.value).isValid
+          )
+          .filter(
+            (u) =>
+              !checkBlockedByUser(u.value, user?.email)
+          )
+          .filter(
+            (u) => {
+              if (isEditingMode) {
+                return !editingConversationMembers.includes(u.value?.email);
+              } else
+                return true;
+            }
+          );
+  }, [user, rawUsers, isEditingMode, editingConversationMembers]);
 
   useEffect(() => {
     if (listUsers && selectedUserEmails) {
@@ -79,6 +168,13 @@ export default ScreenCreateConversation = () => {
     );
     listMembers.push(user.email);
 
+    if (isEditingMode) {
+      editingConversationMembers.forEach(
+        email => listMembers.push(email)
+      )
+      handleUpdateEditingConversationMembers(listMembers);
+      return;
+    }
     if (listMembers.length <= 1) {
       showMessage({
         type: "danger",
@@ -128,6 +224,19 @@ export default ScreenCreateConversation = () => {
       );
     }
   };
+
+  const handleUpdateEditingConversationMembers = (listMembers) => {
+    listMembers = [...new Set(listMembers)];
+    listMembers.sort((a, b) => a.localeCompare(b));
+
+    Fire.update(`conversation/${editingConversationId}`, { listMembers }).then(() => {
+      navigation.replace(SCREENS.message.name, { conversationId: editingConversationId });
+      showMessage({
+        message: "Conversation's members updated!",
+        type: "success",
+      })
+    })
+  }
 
   /**
    * @param {[string]} listMembers
@@ -181,7 +290,7 @@ export default ScreenCreateConversation = () => {
 
   return (
     <SafeAreaView style={SafeView}>
-      <TopNavigationBar title="Create Conversation" />
+      <TopNavigationBar title={isEditingMode ? "Add members" : "Create conversation"} />
       <Layout style={{ flex: 1 }}>
         <Layout style={[styles.center]}>
           <Layout
@@ -231,6 +340,7 @@ export default ScreenCreateConversation = () => {
                   width: "100%"
                 }}
                 onPress={() => handleToggleSelectedUser(user?.value?.email)}
+                onLongPress={() => handleUserLongPress(user?.value?.email)}
               >
                 <CheckBox
                   style={{ flex: 1, marginLeft: 30 }}
@@ -250,6 +360,21 @@ export default ScreenCreateConversation = () => {
             ))}
           </ScrollView>
         </Layout>
+        {/* MODAL */}
+        <BottomModal
+          visible={modalVisibility}
+          onTouchOutside={() => {
+            setModalVisibility(modalVisibility ? false : true);
+          }}
+          modalAnimation={
+            new SlideAnimation({
+              slideFrom: "bottom",
+            })
+          }
+          swipeDirection={["up", "down"]}
+        >
+          {modalContent}
+        </BottomModal>
       </Layout>
     </SafeAreaView>
   );

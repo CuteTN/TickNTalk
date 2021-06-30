@@ -7,6 +7,7 @@ import {
   SafeAreaView,
   TouchableOpacity,
   FlatList,
+  Alert,
 } from "react-native";
 import { SearchBar } from "react-native-elements";
 import { useNavigation } from "@react-navigation/native";
@@ -22,6 +23,7 @@ import {
   checkConversationSeenByUser,
   getConversationDisplayName,
   getOtherUsersInConversation,
+  handleRemoveMember,
   handleSeenByUser,
   handleUnseenByUser,
 } from "../Utils/conversation";
@@ -34,21 +36,7 @@ import {
 } from "react-native-modals";
 import { handleBlockUser, handleUnblockUser } from "../Utils/user";
 import { useRef } from "react";
-
-// const DATA = [
-//   {
-//     text: "BLOCK",
-//     onPress: () => console.log("block press"),
-//   },
-//   {
-//     text: "BLOCK AGAIN",
-//     onPress: () => console.log("block again press"),
-//   },
-//   {
-//     text: "BLOCK ONE MORE TIME",
-//     onPress: () => console.log("block again press"),
-//   },
-// ];
+import Fire from "../firebase/Fire";
 
 const ScreenConversations = () => {
   const [searchText, setSearchText] = useState("");
@@ -62,7 +50,7 @@ const ScreenConversations = () => {
     const renderItem = ({ item }) => (
       <Button
         appearance="ghost"
-        onPress={item.onPress}
+        onPress={() => { item.onPress(); setModalVisibility(false) }}
       >
         {item.text}
       </Button>
@@ -74,7 +62,6 @@ const ScreenConversations = () => {
       </ModalContent>
     );
   }
-  // const modalContent = setModalContent(DATA);
 
   const navigation = useNavigation();
   const listRawConversations = useFiredux("conversation") ?? {};
@@ -151,6 +138,24 @@ const ScreenConversations = () => {
       )
     }
 
+    if (selectedConversation.type === "group") {
+      if (user?.email === selectedConversation?.owner) {
+        modalData.push(
+          {
+            text: "Delete this conversation",
+            onPress: () => handleConfirmAndDeleteConversations(conversationId),
+          }
+        )
+      } else {
+        modalData.push(
+          {
+            text: "Leave this conversation",
+            onPress: () => handleConfirmAndLeaveConversation(conversationId, selectedConversation),
+          }
+        )
+      }
+    }
+
     modalData.push(
       {
         text: `Mark as ${(seenByThisUser ? "unread" : "read")}`,
@@ -161,7 +166,43 @@ const ScreenConversations = () => {
     setModalContent(convertToModalContent(modalData));
   }, [modalVisibility, listConversations, user]);
 
+  const handleConfirmAndDeleteConversations = (conversationId) => {
+    Alert.alert(
+      "Delete conversation",
+      "Are you sure to delete this conversation?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+          onPress: () => { },
+        },
+        {
+          text: "OK",
+          style: "default",
+          onPress: () => Fire.remove(`conversation/${conversationId}`),
+        },
+      ]
+    )
+  }
 
+  const handleConfirmAndLeaveConversation = (conversationId, conversation) => {
+    Alert.alert(
+      "Leave conversation",
+      "Are you sure to leave this conversation?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+          onPress: () => { },
+        },
+        {
+          text: "OK",
+          style: "default",
+          onPress: () => handleRemoveMember(user?.email, conversationId, conversation),
+        },
+      ]
+    )
+  }
 
   const handleCreateConversationPress = () => {
     navigation.navigate(SCREENS.createConversation.name);
