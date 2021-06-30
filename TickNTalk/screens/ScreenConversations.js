@@ -7,7 +7,6 @@ import {
   SafeAreaView,
   TouchableOpacity,
   FlatList,
-  Alert,
 } from "react-native";
 import { SearchBar } from "react-native-elements";
 import { useNavigation } from "@react-navigation/native";
@@ -21,11 +20,6 @@ import { matchPointConversation } from "../Utils/search";
 import {
   checkConversationHasUser,
   checkConversationSeenByUser,
-  getConversationDisplayName,
-  getOtherUsersInConversation,
-  handleRemoveMember,
-  handleSeenByUser,
-  handleUnseenByUser,
 } from "../Utils/conversation";
 import { useSignedIn } from "../hooks/useSignedIn";
 import {
@@ -34,34 +28,49 @@ import {
   ModalButton,
   SlideAnimation,
 } from "react-native-modals";
-import { handleBlockUser, handleUnblockUser } from "../Utils/user";
-import { useRef } from "react";
-import Fire from "../firebase/Fire";
+import ActionButton from 'react-native-action-button';
+
+import { ScreenSplash } from "./ScreenSplash";
+
+const DATA = [
+  {
+    text: "BLOCK",
+    func: () => {},
+  },
+  {
+    text: "BLOCK AGAIN",
+    func: () => {},
+  },
+  {
+    text: "BLOCK ONE MORE TIME",
+    func: () => {},
+  },
+];
 
 const ScreenConversations = () => {
   const [searchText, setSearchText] = useState("");
   const [modalVisibility, setModalVisibility] = useState(false);
-  const longPressedConversationId = useRef("");
 
-  const [modalContent, setModalContent] = useState([]);
-
-  function convertToModalContent(newData) {
+  function setModalContent(newData) {
     //newData is an array contains of [{title, function}]
     const renderItem = ({ item }) => (
       <Button
         appearance="ghost"
-        onPress={() => { item.onPress(); setModalVisibility(false) }}
+        onPress={() => {
+          item.func;
+        }}
       >
         {item.text}
       </Button>
     );
-    // console.log(newData);
+    console.log(newData);
     return (
       <ModalContent>
         <FlatList data={newData} renderItem={renderItem} />
       </ModalContent>
     );
   }
+  const modalContent = setModalContent(DATA);
 
   const navigation = useNavigation();
   const listRawConversations = useFiredux("conversation") ?? {};
@@ -72,8 +81,7 @@ const ScreenConversations = () => {
   const listConversations = React.useMemo(() => {
     return Object.entries(listRawConversations ?? {})
       .filter((c) => checkConversationHasUser(user?.email, c[1]))
-      .map((c) => ({ key: c[0], value: c[1] }))
-      .sort((c1, c2) => c2?.value?.lastestMessage?.createdAt - c1?.value?.lastestMessage?.createdAt);
+      .map((c) => ({ key: c[0], value: c[1] }));
   }, [listRawConversations, user]);
 
   // same as list conversation but is sorted to fit search text
@@ -105,104 +113,9 @@ const ScreenConversations = () => {
   const handleMessagePress = (conversationId) => {
     navigation.navigate(SCREENS.message.name, { conversationId });
   };
-
-
   const handleMessageLongPress = (conversationId) => {
-    longPressedConversationId.current = conversationId;
     setModalVisibility(true);
   };
-
-  useEffect(() => {
-    if (!modalVisibility)
-      return;
-
-    const conversationId = longPressedConversationId.current;
-
-    const selectedConversation = listRawConversations?.[conversationId];
-    const seenByThisUser = checkConversationSeenByUser(user?.email, selectedConversation);
-
-    if (!selectedConversation)
-      return;
-
-    let modalData = [];
-
-    if (selectedConversation.type === "private") {
-      const otherUserEmail = getOtherUsersInConversation(user?.email, selectedConversation)?.[0];
-      const blockedByThisUser = Object.values(user?.blockedUsers ?? {}).includes(otherUserEmail);
-
-      modalData.push(
-        {
-          text: (blockedByThisUser ? "Unblock" : "Block") + " this user",
-          onPress: () => (blockedByThisUser ? handleUnblockUser : handleBlockUser)(user?.email, otherUserEmail),
-        }
-      )
-    }
-
-    if (selectedConversation.type === "group") {
-      if (user?.email === selectedConversation?.owner) {
-        modalData.push(
-          {
-            text: "Delete this conversation",
-            onPress: () => handleConfirmAndDeleteConversations(conversationId),
-          }
-        )
-      } else {
-        modalData.push(
-          {
-            text: "Leave this conversation",
-            onPress: () => handleConfirmAndLeaveConversation(conversationId, selectedConversation),
-          }
-        )
-      }
-    }
-
-    modalData.push(
-      {
-        text: `Mark as ${(seenByThisUser ? "unread" : "read")}`,
-        onPress: () => (seenByThisUser ? handleUnseenByUser : handleSeenByUser)(user?.email, conversationId, selectedConversation),
-      }
-    )
-
-    setModalContent(convertToModalContent(modalData));
-  }, [modalVisibility, listConversations, user]);
-
-  const handleConfirmAndDeleteConversations = (conversationId) => {
-    Alert.alert(
-      "Delete conversation",
-      "Are you sure to delete this conversation?",
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-          onPress: () => { },
-        },
-        {
-          text: "OK",
-          style: "default",
-          onPress: () => Fire.remove(`conversation/${conversationId}`),
-        },
-      ]
-    )
-  }
-
-  const handleConfirmAndLeaveConversation = (conversationId, conversation) => {
-    Alert.alert(
-      "Leave conversation",
-      "Are you sure to leave this conversation?",
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-          onPress: () => { },
-        },
-        {
-          text: "OK",
-          style: "default",
-          onPress: () => handleRemoveMember(user?.email, conversationId, conversation),
-        },
-      ]
-    )
-  }
 
   const handleCreateConversationPress = () => {
     navigation.navigate(SCREENS.createConversation.name);
@@ -214,16 +127,20 @@ const ScreenConversations = () => {
   const dataToText_Time = (value) => {
     if (!value) return "";
     let result = new Date(value?.createdAt);
-    return `${result.getHours()}:${result.getMinutes()}`;
+    let hour = result.getHours();
+    if (hour < 10) hour = "0" + hour.toString();
+    let minute = result.getMinutes();
+    if (minute < 10) minute = "0" + minute.toString();
+    return `${hour}:${minute}`;
   };
 
-  //LOADING EFFET
-  const [load, setLoad] = useState(false);
-  useEffect(() => {
-    setLoad(true);
-  });
+  // //LOADING EFFECT
+  // const [load, setLoad] = useSate(false);
+  // useEffect(() => {
+  //   setLoad(true);
+  // });
 
-  // if (!load) return <ScreenSplash />
+  // if (!load) return <ScreenSplash/>
   return (
     <SafeAreaView style={SafeView}>
       <TopNavigationBar title="Conversations" />
@@ -246,22 +163,23 @@ const ScreenConversations = () => {
                 lightTheme="true"
                 containerStyle={{
                   marginHorizontal: 8,
+                  marginVertical: 4,
                   backgroundColor: "transparent",
-                  width: "95%",
+                  height: 48,
                   flex: 5,
                 }}
                 inputContainerStyle={{
                   backgroundColor: "whitesmoke",
-                  borderRadius: 23,
+                  borderRadius: 16,
                 }}
                 leftIconContainerStyle={{ marginLeft: 16 }}
                 inputStyle={{}}
                 value={searchText}
                 onChangeText={setSearchText}
               />
-              <TouchableOpacity onPress={handleCreateConversationPress}>
-                <Icon.AddCircle style={{ width: 48, height: 48 }} />
-              </TouchableOpacity>
+              {/* <TouchableOpacity onPress={handleCreateConversationPress} style={{alignSelf: 'flex-start'}}>
+                <Icon.AddCircle style={{ width: 32, height: 32 }} />
+              </TouchableOpacity> */}
             </Layout>
             {/*  Binding message list */}
             <ScrollView>
@@ -274,7 +192,7 @@ const ScreenConversations = () => {
                     onLongPress={() => {
                       handleMessageLongPress(conversation.key);
                     }}
-                    name={getConversationDisplayName(user?.email, conversation.value, listRawUsers)}
+                    name={conversation.value.name}
                     lastestChat={dataToText_LastestMessage(
                       conversation.value.lastestMessage
                     )}
@@ -308,6 +226,8 @@ const ScreenConversations = () => {
           >
             {modalContent}
           </BottomModal>
+
+          <ActionButton onPress={handleCreateConversationPress}/>
         </ImageBackground>
       </Layout>
     </SafeAreaView>

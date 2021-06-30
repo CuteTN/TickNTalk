@@ -1,5 +1,5 @@
 import { useNavigation } from "@react-navigation/native";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useFocusEffect } from "react";
 import {
   Layout,
   Text,
@@ -44,7 +44,8 @@ export const ScreenSplash = () => {
 
   useEffect(() => {
     runFadeAnimation();
-  });
+  }); 
+
 
   return (
     <SafeAreaView

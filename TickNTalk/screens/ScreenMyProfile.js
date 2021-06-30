@@ -317,6 +317,7 @@ const ScreenMyProfile = () => {
                 )}
 
                 <Button
+                  appearance="outline"
                   style={[Styles.overall, Styles.button, { width: "auto" }]}
                   onPress={handleChangePassword}
                 >
@@ -333,7 +334,6 @@ const ScreenMyProfile = () => {
                   >
                     <Text> Promise me you will comback UwU</Text>
                     <Button
-                      appearance="outline"
                       style={[Styles.overall, Styles.button, { width: "auto" }]}
                       onPress={handleSignOutPress}
                     >

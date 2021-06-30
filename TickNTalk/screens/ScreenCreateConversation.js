@@ -17,7 +17,11 @@ import { matchPointUser } from "../Utils/search";
 import { SCREENS } from ".";
 import { SafeView, windowWidth } from "../styles/Styles";
 import { TouchableOpacity } from "react-native-gesture-handler";
-import { checkBlockedByUser, handleBlockUser, handleUnblockUser } from "../Utils/user";
+import {
+  checkBlockedByUser,
+  handleBlockUser,
+  handleUnblockUser,
+} from "../Utils/user";
 
 import {
   BottomModal,
@@ -31,14 +35,16 @@ export default ScreenCreateConversation = ({ route }) => {
   const { user } = useSignedIn();
 
   const { editingConversationId } = route?.params ?? {};
-  const [editingConversation] = useRealtimeFire("conversation", editingConversationId);
+  const [editingConversation] = useRealtimeFire(
+    "conversation",
+    editingConversationId
+  );
   const isEditingMode = useMemo(() => Boolean(editingConversation));
   const editingConversationMembers = useMemo(() => {
-    if (!editingConversation)
-      return [];
+    if (!editingConversation) return [];
 
     return Object.values(editingConversation?.listMembers ?? {});
-  }, [editingConversation])
+  }, [editingConversation]);
 
   const rawUsers = useFiredux("user");
   const [searchText, setSearchText] = useState("");
@@ -53,7 +59,10 @@ export default ScreenCreateConversation = ({ route }) => {
     const renderItem = ({ item }) => (
       <Button
         appearance="ghost"
-        onPress={() => { item.onPress(); setModalVisibility(false) }}
+        onPress={() => {
+          item.onPress();
+          setModalVisibility(false);
+        }}
       >
         {item.text}
       </Button>
@@ -72,34 +81,35 @@ export default ScreenCreateConversation = ({ route }) => {
   };
 
   useEffect(() => {
-    if (!modalVisibility)
-      return;
+    if (!modalVisibility) return;
 
     const selectedEmail = longPressedUserEmail.current;
 
     const selectedUser = rawUsers?.[emailToKey(selectedEmail)];
-    const blockedByThisUser = Object.values(user?.blockedUsers ?? {}).includes(selectedEmail);
+    const blockedByThisUser = Object.values(user?.blockedUsers ?? {}).includes(
+      selectedEmail
+    );
 
-    if (!selectedUser)
-      return [];
+    if (!selectedUser) return [];
 
     let modalData = [];
 
-    modalData.push(
-      {
-        text: (blockedByThisUser ? "Unblock" : "Block") + " this user",
-        onPress: () => {
-          if (!blockedByThisUser) {
-            setSelectedUserEmails(prev => ({
-              ...prev,
-              [selectedEmail]: false,
-            }))
-          }
+    modalData.push({
+      text: (blockedByThisUser ? "Unblock" : "Block") + " this user",
+      onPress: () => {
+        if (!blockedByThisUser) {
+          setSelectedUserEmails((prev) => ({
+            ...prev,
+            [selectedEmail]: false,
+          }));
+        }
 
-          (blockedByThisUser ? handleUnblockUser : handleBlockUser)(user?.email, selectedEmail)
-        },
-      }
-    )
+        (blockedByThisUser ? handleUnblockUser : handleBlockUser)(
+          user?.email,
+          selectedEmail
+        );
+      },
+    });
 
     setModalContent(convertToModalContent(modalData));
   }, [modalVisibility, rawUsers, user]);
@@ -115,25 +125,20 @@ export default ScreenCreateConversation = ({ route }) => {
   /** list users after making into a list and filtered */
   const listUsers = React.useMemo(() => {
     if (user && rawUsers)
-      if (!(isEditingMode && (!editingConversationMembers)))
+      if (!(isEditingMode && !editingConversationMembers))
         return Object.entries(rawUsers)
           .map((entry) => ({ key: entry[0], value: entry[1] }))
           .filter(
             (u) =>
-              u.value.email !== user.email && checkEnoughUserInfo(u.value).isValid
+              u.value.email !== user.email &&
+              checkEnoughUserInfo(u.value).isValid
           )
-          .filter(
-            (u) =>
-              !checkBlockedByUser(u.value, user?.email)
-          )
-          .filter(
-            (u) => {
-              if (isEditingMode) {
-                return !editingConversationMembers.includes(u.value?.email);
-              } else
-                return true;
-            }
-          );
+          .filter((u) => !checkBlockedByUser(u.value, user?.email))
+          .filter((u) => {
+            if (isEditingMode) {
+              return !editingConversationMembers.includes(u.value?.email);
+            } else return true;
+          });
   }, [user, rawUsers, isEditingMode, editingConversationMembers]);
 
   useEffect(() => {
@@ -169,9 +174,7 @@ export default ScreenCreateConversation = ({ route }) => {
     listMembers.push(user.email);
 
     if (isEditingMode) {
-      editingConversationMembers.forEach(
-        email => listMembers.push(email)
-      )
+      editingConversationMembers.forEach((email) => listMembers.push(email));
       handleUpdateEditingConversationMembers(listMembers);
       return;
     }
@@ -191,7 +194,7 @@ export default ScreenCreateConversation = ({ route }) => {
           {
             text: "Cancel",
             style: "cancel",
-            onPress: () => { },
+            onPress: () => {},
           },
           {
             text: "No",
@@ -213,7 +216,7 @@ export default ScreenCreateConversation = ({ route }) => {
           {
             text: "Cancel",
             style: "cancel",
-            onPress: () => { },
+            onPress: () => {},
           },
           {
             text: "Yes",
@@ -229,14 +232,18 @@ export default ScreenCreateConversation = ({ route }) => {
     listMembers = [...new Set(listMembers)];
     listMembers.sort((a, b) => a.localeCompare(b));
 
-    Fire.update(`conversation/${editingConversationId}`, { listMembers }).then(() => {
-      navigation.replace(SCREENS.message.name, { conversationId: editingConversationId });
-      showMessage({
-        message: "Conversation's members updated!",
-        type: "success",
-      })
-    })
-  }
+    Fire.update(`conversation/${editingConversationId}`, { listMembers }).then(
+      () => {
+        navigation.replace(SCREENS.message.name, {
+          conversationId: editingConversationId,
+        });
+        showMessage({
+          message: "Conversation's members updated!",
+          type: "success",
+        });
+      }
+    );
+  };
 
   /**
    * @param {[string]} listMembers
@@ -262,7 +269,12 @@ export default ScreenCreateConversation = ({ route }) => {
 
       case "group": {
         let name = `${user.displayName}'s new group`;
-        Fire.push(`conversation`, { listMembers, type, name, owner: user.email }).then((res) => {
+        Fire.push(`conversation`, {
+          listMembers,
+          type,
+          name,
+          owner: user.email,
+        }).then((res) => {
           const { key } = res ?? {};
 
           if (key)
@@ -284,20 +296,21 @@ export default ScreenCreateConversation = ({ route }) => {
       showMessage({
         message: "You blocked this user.",
         type: "danger",
-      })
+      });
     }
   };
 
   return (
     <SafeAreaView style={SafeView}>
-      <TopNavigationBar title={isEditingMode ? "Add members" : "Create conversation"} />
+      <TopNavigationBar
+        title={isEditingMode ? "Add members" : "Create conversation"}
+      />
       <Layout style={{ flex: 1 }}>
         <Layout style={[styles.center]}>
           <Layout
             style={{
               display: "flex",
               flexDirection: "row",
-              marginTop: 20,
               alignItems: "center",
             }}
           >
@@ -307,8 +320,9 @@ export default ScreenCreateConversation = ({ route }) => {
               lightTheme="true"
               containerStyle={{
                 marginHorizontal: 8,
+                marginVertical: 4,
                 backgroundColor: "transparent",
-                width: "95%",
+                height: 48,
                 flex: 5,
               }}
               inputContainerStyle={{
@@ -337,24 +351,24 @@ export default ScreenCreateConversation = ({ route }) => {
                   flexDirection: "row",
                   alignItems: "center",
                   justifyContent: "space-evenly",
-                  width: "100%"
+                  width: "100%",
                 }}
                 onPress={() => handleToggleSelectedUser(user?.value?.email)}
                 onLongPress={() => handleUserLongPress(user?.value?.email)}
               >
                 <CheckBox
-                  style={{ flex: 1, marginLeft: 30 }}
+                  style={{ flex: 1, marginLeft: 32 }}
                   status="primary"
                   checked={user?.selected}
                 ></CheckBox>
                 <MessageCard
-                  containerStyle={{ flex: 9 }}
+                  containerStyle={{ flex: 9, marginLeft: -16 }}
                   name={`${user?.value?.firstName} ${user?.value?.lastName}`}
                   lastestChat={`${user?.value?.displayName}`}
                   ImageSize={60}
                   imageSource={user?.value?.avaUrl ?? "../assets/bg.png"}
                   isRead={!user?.selected}
-                // highlight selection
+                  // highlight selection
                 />
               </TouchableOpacity>
             ))}
