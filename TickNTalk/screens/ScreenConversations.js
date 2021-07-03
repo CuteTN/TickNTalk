@@ -7,6 +7,7 @@ import {
   SafeAreaView,
   TouchableOpacity,
   FlatList,
+  Alert,
 } from "react-native";
 import { SearchBar } from "react-native-elements";
 import { useNavigation } from "@react-navigation/native";
@@ -20,6 +21,11 @@ import { matchPointConversation } from "../Utils/search";
 import {
   checkConversationHasUser,
   checkConversationSeenByUser,
+  getConversationDisplayName,
+  getOtherUsersInConversation,
+  handleRemoveMember,
+  handleSeenByUser,
+  handleUnseenByUser,
 } from "../Utils/conversation";
 import { useSignedIn } from "../hooks/useSignedIn";
 import {
@@ -32,45 +38,34 @@ import ActionButton from 'react-native-action-button';
 
 import { ScreenSplash } from "./ScreenSplash";
 
-const DATA = [
-  {
-    text: "BLOCK",
-    func: () => {},
-  },
-  {
-    text: "BLOCK AGAIN",
-    func: () => {},
-  },
-  {
-    text: "BLOCK ONE MORE TIME",
-    func: () => {},
-  },
-];
+import { handleBlockUser, handleUnblockUser } from "../Utils/user";
+import { useRef } from "react";
+import Fire from "../firebase/Fire";
 
 const ScreenConversations = () => {
   const [searchText, setSearchText] = useState("");
   const [modalVisibility, setModalVisibility] = useState(false);
+  const longPressedConversationId = useRef("");
 
-  function setModalContent(newData) {
+  const [modalContent, setModalContent] = useState([]);
+
+  function convertToModalContent(newData) {
     //newData is an array contains of [{title, function}]
     const renderItem = ({ item }) => (
       <Button
         appearance="ghost"
-        onPress={() => {
-          item.func;
-        }}
+        onPress={() => { item.onPress(); setModalVisibility(false) }}
       >
         {item.text}
       </Button>
     );
-    console.log(newData);
+
     return (
       <ModalContent>
         <FlatList data={newData} renderItem={renderItem} />
       </ModalContent>
     );
   }
-  const modalContent = setModalContent(DATA);
 
   const navigation = useNavigation();
   const listRawConversations = useFiredux("conversation") ?? {};
@@ -81,7 +76,8 @@ const ScreenConversations = () => {
   const listConversations = React.useMemo(() => {
     return Object.entries(listRawConversations ?? {})
       .filter((c) => checkConversationHasUser(user?.email, c[1]))
-      .map((c) => ({ key: c[0], value: c[1] }));
+      .map((c) => ({ key: c[0], value: c[1] }))
+      .sort((c1, c2) => c2?.value?.lastestMessage?.createdAt - c1?.value?.lastestMessage?.createdAt);
   }, [listRawConversations, user]);
 
   // same as list conversation but is sorted to fit search text
@@ -113,9 +109,104 @@ const ScreenConversations = () => {
   const handleMessagePress = (conversationId) => {
     navigation.navigate(SCREENS.message.name, { conversationId });
   };
+
+
   const handleMessageLongPress = (conversationId) => {
+    longPressedConversationId.current = conversationId;
     setModalVisibility(true);
   };
+
+  useEffect(() => {
+    if (!modalVisibility)
+      return;
+
+    const conversationId = longPressedConversationId.current;
+
+    const selectedConversation = listRawConversations?.[conversationId];
+    const seenByThisUser = checkConversationSeenByUser(user?.email, selectedConversation);
+
+    if (!selectedConversation)
+      return;
+
+    let modalData = [];
+
+    if (selectedConversation.type === "private") {
+      const otherUserEmail = getOtherUsersInConversation(user?.email, selectedConversation)?.[0];
+      const blockedByThisUser = Object.values(user?.blockedUsers ?? {}).includes(otherUserEmail);
+
+      modalData.push(
+        {
+          text: (blockedByThisUser ? "Unblock" : "Block") + " this user",
+          onPress: () => (blockedByThisUser ? handleUnblockUser : handleBlockUser)(user?.email, otherUserEmail),
+        }
+      )
+    }
+
+    if (selectedConversation.type === "group") {
+      if (user?.email === selectedConversation?.owner) {
+        modalData.push(
+          {
+            text: "Delete this conversation",
+            onPress: () => handleConfirmAndDeleteConversations(conversationId),
+          }
+        )
+      } else {
+        modalData.push(
+          {
+            text: "Leave this conversation",
+            onPress: () => handleConfirmAndLeaveConversation(conversationId, selectedConversation),
+          }
+        )
+      }
+    }
+
+    modalData.push(
+      {
+        text: `Mark as ${(seenByThisUser ? "unread" : "read")}`,
+        onPress: () => (seenByThisUser ? handleUnseenByUser : handleSeenByUser)(user?.email, conversationId, selectedConversation),
+      }
+    )
+
+    setModalContent(convertToModalContent(modalData));
+  }, [modalVisibility, listConversations, user]);
+
+  const handleConfirmAndDeleteConversations = (conversationId) => {
+    Alert.alert(
+      "Delete conversation",
+      "Are you sure to delete this conversation?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+          onPress: () => { },
+        },
+        {
+          text: "OK",
+          style: "default",
+          onPress: () => Fire.remove(`conversation/${conversationId}`),
+        },
+      ]
+    )
+  }
+
+  const handleConfirmAndLeaveConversation = (conversationId, conversation) => {
+    Alert.alert(
+      "Leave conversation",
+      "Are you sure to leave this conversation?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+          onPress: () => { },
+        },
+        {
+          text: "OK",
+          style: "default",
+          onPress: () => handleRemoveMember(user?.email, conversationId, conversation),
+        },
+      ]
+    )
+  }
 
   const handleCreateConversationPress = () => {
     navigation.navigate(SCREENS.createConversation.name);
@@ -192,7 +283,7 @@ const ScreenConversations = () => {
                     onLongPress={() => {
                       handleMessageLongPress(conversation.key);
                     }}
-                    name={conversation.value.name}
+                    name={getConversationDisplayName(user?.email, conversation.value, listRawUsers)}
                     lastestChat={dataToText_LastestMessage(
                       conversation.value.lastestMessage
                     )}
@@ -227,7 +318,7 @@ const ScreenConversations = () => {
             {modalContent}
           </BottomModal>
 
-          <ActionButton onPress={handleCreateConversationPress}/>
+          <ActionButton onPress={handleCreateConversationPress} />
         </ImageBackground>
       </Layout>
     </SafeAreaView>
