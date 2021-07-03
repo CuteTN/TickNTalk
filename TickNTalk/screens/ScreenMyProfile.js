@@ -40,6 +40,7 @@ import {
 } from "react-native-modals";
 import { pickProcess, uploadPhotoAndGetLink } from "../Utils/uploadPhotoVideo";
 import { emailToKey, tokenToKey } from "../Utils/emailKeyConvert";
+import { replaceAll } from "../Utils/stringUtils";
 
 const ScreenMyProfile = () => {
   const navigation = useNavigation();
@@ -139,7 +140,7 @@ const ScreenMyProfile = () => {
     });
   };
 
-  const handleChangePassword=()=>{
+  const handleChangePassword = () => {
     navigation.navigate(SCREENS.editUserPassword.name);
   }
   const handleUpdateAvatarPress = () => {
@@ -296,7 +297,7 @@ const ScreenMyProfile = () => {
                       : displayPhoneNumber(tempUser?.phoneNumber ?? "")
                   }
                   onChangeText={(text) =>
-                    setTempUserFieldFunc("phoneNumber")(text.replace(" ", ""))
+                    setTempUserFieldFunc("phoneNumber")(replaceAll(text, " ", ""))
                   }
                 />
 

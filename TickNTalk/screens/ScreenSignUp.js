@@ -33,7 +33,7 @@ const ScreenSignUp = () => {
     Fire.signUpWithEmail(email, password).then(
       ({ successful, errorMessage }) => {
         if (successful) {
-          navigateAndReset(SCREENS.master.name);
+          navigateAndReset(navigation, SCREENS.myProfile.name);
           showMessage({ type: 'success', message: `Sign up with email ${email} successfully!` });
         }
         if (errorMessage) {
