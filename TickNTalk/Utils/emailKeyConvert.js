@@ -10,6 +10,6 @@ export const keyToEmail = (key) => replaceAll(key, "^", ".");
  */
 export const emailToKey = (email) => replaceAll(email, ".", "^");
 
-export const tokenToKey = (token) => replaceAll(token, "[", "^");
+export const tokenToKey = (token) => replaceAll(replaceAll(token, "[", "^"), "]", "&");
 
-export const keyToToken = (key) => replaceAll(key, "^", "[");
+export const keyToToken = (key) => replaceAll(replaceAll(key, "^", "["), "&", "]");

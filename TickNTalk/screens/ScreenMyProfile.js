@@ -82,7 +82,7 @@ const ScreenMyProfile = () => {
   const handleUpdate = async () => {
     setModalVisibility(false);
     let result = await pickProcess(true);
-    console.log(result);
+    // console.log(result);
     updateAvatarLink(result.uri);
     await uploadAvatarToFirebase(result.uri);
   };
