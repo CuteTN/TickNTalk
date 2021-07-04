@@ -14,6 +14,7 @@
 - Update user password.
 - Set a group member as admin (group's admin only)
 - Search user or conversation.
+- Send and Receive push notifications
 
 2. System Requirement:
 - Android 10+
