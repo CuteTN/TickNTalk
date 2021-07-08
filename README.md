@@ -1,3 +1,5 @@
+![TickNTalk](https://i.imgur.com/lPDUa4a.png)
+
 # TickNTalk
 1. Features:
 - Sign in, Sign up, Forget password.
@@ -38,8 +40,9 @@
 
 6. License:
 
-The UIT License (UIT)
-Copyright (c) 2021 QNV from UIT
+MIT License
+
+Copyright (c) 2021 Team TickNTalk
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -56,4 +59,5 @@ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
