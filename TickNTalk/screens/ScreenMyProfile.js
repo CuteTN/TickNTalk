@@ -1,5 +1,5 @@
 import { useNavigation } from "@react-navigation/native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Layout,
   Text,
@@ -11,6 +11,7 @@ import {
   Datepicker,
   Divider,
   Alert,
+  IndexPath,
 } from "@ui-kitten/components";
 import { useSignedIn } from "../hooks/useSignedIn";
 import Fire from "../firebase/Fire";
@@ -51,6 +52,12 @@ const ScreenMyProfile = () => {
   const [modalContent, setModalContent] = useState([]);
   const [avatarLink, updateAvatarLink] = useState(null);
 
+  const GENDERS = ["Male", "Female", "Other"];
+  const [genderSelectedIndex, setGenderSelectedIndex] = useState();
+  const currentGender = useMemo(() => GENDERS[genderSelectedIndex - 1]);
+
+  const isNewUser = React.useRef(undefined);
+
   //#region Upload ảnh từ app lên Storage (lưu)
 
   //Upload ảnh lên Storage
@@ -87,15 +94,27 @@ const ScreenMyProfile = () => {
     await uploadAvatarToFirebase(result.uri);
   };
   //#endregion
+
   useEffect(() => {
     if (!user) return;
     updateAvatarLink(user?.avaUrl);
   }, [user]);
+
+
   useEffect(() => {
     if (tempUser && editingMode) return;
+
+    if (user && isNewUser.current === undefined)
+      isNewUser.current = !checkEnoughUserInfo(user).isValid;
+
     setTempUser(user);
+
+    const initGenderIndex = GENDERS.findIndex(g => g === user?.gender);
+    setGenderSelectedIndex(initGenderIndex >= 0 ? new IndexPath(initGenderIndex) : null);
+
     if (user && !checkEnoughUserInfo(user).isValid) setEditingMode(true);
   }, [user, editingMode]);
+
 
   function convertToModalContent(newData) {
     //newData is an array contains of [{title, function}]
@@ -168,7 +187,8 @@ const ScreenMyProfile = () => {
           type: "success",
           message: "Your information has been saved!",
         });
-        navigation.replace(SCREENS.master.name);
+        if (isNewUser.current)
+          navigation.replace(SCREENS.master.name);
       });
     } else {
       showMessage({
@@ -189,6 +209,12 @@ const ScreenMyProfile = () => {
       6,
       10
     )}`.trim();
+
+
+  const handleSelectGenderIndex = (newIndex) => {
+    setGenderSelectedIndex(newIndex);
+    setTempUserFieldFunc("gender")(GENDERS[newIndex - 1]);
+  }
 
   return (
     <Layout style={{ flex: 1 }}>
@@ -270,12 +296,24 @@ const ScreenMyProfile = () => {
                     onSelect={setTempUserFieldFunc("birthday")}
                   />
 
-                  <Input
+                  {/* <Input
                     style={{ flex: 2, paddingLeft: 4 }}
                     label={"Gender"}
                     value={tempUser?.gender}
                     onChangeText={setTempUserFieldFunc("gender")}
-                  ></Input>
+                  ></Input> */}
+
+                  <Select
+                    label={"Gender"}
+                    style={{ flex: 2, paddingLeft: 4 }}
+                    placeholder={"Gender"}
+                    value={currentGender}
+                    selectedIndex={genderSelectedIndex}
+                    onSelect={handleSelectGenderIndex}
+                  >
+                    {GENDERS.map(g => <SelectItem title={g} />)}
+                  </Select>
+
                 </Layout>
 
                 <Layout style={rowStyle}>
@@ -317,13 +355,15 @@ const ScreenMyProfile = () => {
                   </Button>
                 )}
 
-                <Button
-                  appearance="outline"
-                  style={[Styles.overall, Styles.button, { width: "auto" }]}
-                  onPress={handleChangePassword}
-                >
-                  CHANGE YOUR PASSWORD
-                </Button>
+                {!isNewUser.current &&
+                  <Button
+                    appearance="outline"
+                    style={[Styles.overall, Styles.button, { width: "auto" }]}
+                    onPress={handleChangePassword}
+                  >
+                    CHANGE YOUR PASSWORD
+                  </Button>
+                }
 
                 {!editingMode ? (
                   <Layout
@@ -333,7 +373,7 @@ const ScreenMyProfile = () => {
                       alignItems: "center",
                     }}
                   >
-                    <Text> Promise me you will comback UwU</Text>
+                    <Text>Sign in with another account</Text>
                     <Button
                       style={[Styles.overall, Styles.button, { width: "auto" }]}
                       onPress={handleSignOutPress}
