@@ -245,6 +245,7 @@ const ScreenConversationInfo = ({ route }) => {
             }}
           >
             <Input
+              key={"nameInput_" + isEditName}
               status={isEditName ? "primary" : "basic"}
               style={Styles.overall}
               label={"Conversation Name"}
@@ -303,7 +304,7 @@ const ScreenConversationInfo = ({ route }) => {
             >
               <Text>Members:</Text>
               {canAddMembers &&
-                <Button onPress={handleAddMembersPress}>
+                <Button disabled={isEditName} onPress={handleAddMembersPress}>
                   Add members
                 </Button>
               }
