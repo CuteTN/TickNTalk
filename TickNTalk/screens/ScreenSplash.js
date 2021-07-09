@@ -27,23 +27,12 @@ import {
 
 export const ScreenSplash = () => {
   const START_FADE = 0.7;
-  const fadeAnim = useRef(new Animated.Value(START_FADE)).current;
 
-  function runFadeAnimation() {
-    Animated.sequence([ 
-        Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 3000,
-      }),  
-      Animated.timing(fadeAnim, {
-        toValue: START_FADE,
-        duration: 3000,
-      })
-    ]).start(() => runFadeAnimation());
-  }
+  
+  
 
   useEffect(() => {
-    runFadeAnimation();
+    //runFadeAnimation();
   }); 
 
 
@@ -55,11 +44,9 @@ export const ScreenSplash = () => {
         style={{
           width: 196,
           height: 196,
-          opacity: fadeAnim,
         }}
         source={require("../assets/Logo.png")}
       />
-      <Spinner />
     </SafeAreaView>
   );
 };

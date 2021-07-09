@@ -161,21 +161,25 @@ const ScreenMessage = ({ route }) => {
     // }
   };
   useEffect(() => {
+    //console.log(messages);
+  },[messages])
+  useEffect(() => {
     if (conversation?.listMessages) {
-      let listMess = Object.values(conversation.listMessages);
+      let listMess = Object.values(conversation?.listMessages);
       listMess.forEach((child) => {
         let msg = {
           Id: child.key,
           data: child.data,
         };
+        //console.log('child',child);
         if (msg.data) {
           let data = msg.data;
           if (data.user._id === user?.email) {
             data.user.name = user?.displayName ?? user?.firstName + " " + user?.lastName;
             data.user.avatar = user?.avaUrl;
+            Fire.update(`conversation/${conversationId}/listMessages/${data._id}/`, { data }).then(() => {
+            })
           }
-          Fire.update(`conversation/${conversationId}/listMessages/${msg.Id}/`, { data }).then(() => {
-          })
         }
       });
     }
@@ -260,7 +264,7 @@ const ScreenMessage = ({ route }) => {
 
     let lastestMessage = newMessages[0]; //for sorting later
 
-    let messageKey = newMessages[0].createdAt;
+    let messageKey = newMessages[0]._id;
 
     if (!newMessages[0].user.avatar) newMessages[0].user.avatar = ""; //somehow if user doesn't have avatar, message won't be send
 
