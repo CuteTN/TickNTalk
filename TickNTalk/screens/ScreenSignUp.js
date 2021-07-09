@@ -98,7 +98,7 @@ const ScreenSignUp = () => {
 
           <Layout style={{ flexDirection: 'row', backgroundColor: 'transparent', alignSelf: 'center', alignItems: 'center' }}>
             <Text style={[{ textAlignVertical: 'center' }, Styles.overall]}>
-              Already a close homie ?
+              Already have an account?
             </Text>
             <Button onPress={handleSignInPress}
               appearance='ghost'>

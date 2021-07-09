@@ -1,3 +1,5 @@
+// not used
+
 import { useNavigation } from '@react-navigation/native';
 import React, { useRef, useState } from 'react';
 import { Layout, Text, Button, Input, Avatar, Select, SelectItem, Datepicker, Icon } from '@ui-kitten/components';
@@ -5,7 +7,7 @@ import Fire from '../firebase/Fire';
 import * as styles from '../shared/styles'
 import { ImageBackground, Image, Keyboard, RecyclerViewBackedScrollView, SafeAreaView } from "react-native";
 import { SCREENS } from '.';
-import {SafeView, Styles} from '../styles/Styles';
+import { SafeView, Styles } from '../styles/Styles';
 
 const ScreenEditUserInfo = () => {
   const [email, setEmail] = useState()
@@ -13,12 +15,12 @@ const ScreenEditUserInfo = () => {
 
   const GENDERS = ["Male", "Female", "Other"];
   const [genderSelectedIndex, setGenderSelectedIndex] = useState();
+  const getCurrentGender = () => GENDERS[genderSelectedIndex - 1];
 
   const [selectedBirthday, setSelectedBirthday] = useState(new Date());
 
   const navigation = useNavigation();
 
-  const getCurrentGender = () => GENDERS[genderSelectedIndex - 1];
 
   const handleSignUpPress = () => {
     Fire.signUpWithEmail(email, password).then(

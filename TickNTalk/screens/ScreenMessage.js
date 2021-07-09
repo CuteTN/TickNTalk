@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import { Layout, Button, Divider } from "@ui-kitten/components";
 import * as styles from "../shared/styles";
-import { ImageBackground, SafeAreaView, TouchableOpacity } from "react-native";
+import { ImageBackground, SafeAreaView, TouchableOpacity, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { GiftedChat } from "react-native-gifted-chat";
 import {
@@ -600,19 +600,15 @@ const ScreenMessage = ({ route }) => {
               listRawUsers
             )}
             containerStyle={{ width: "60%", marginTop: 8 }}
-            lastestChat="Last seen recently"
             ImageSize={48}
             imageSource={
               conversation?.avaUrl ??
               "https://firebasestorage.googleapis.com/v0/b/tickntalk2.appspot.com/o/Logo.png?alt=media&token=1f67739c-177d-43f6-89e7-3dfefa8f828f"
             }
           />
-          <Button appearance="ghost">
-            <Icon.Call style={{ width: 24, height: 24 }} />
-          </Button>
-          <Button appearance="ghost">
-            <Icon.VideoCam style={{ width: 24, height: 24 }} />
-          </Button>
+
+          <Icon.Call style={{ width: 24, height: 24, color: "transparent" }} />
+          <Icon.VideoCam style={{ width: 24, height: 24, color: "transparent" }} />
         </Layout>
 
         <Divider />
