@@ -75,6 +75,7 @@ export const getBlob = async (uri) => {
 //Upload ảnh lên Storage
 export const uploadPhotoAndGetLink = async (uri, fileName) => {
   try {
+    //console.log(uri, fileName)
     let photo = await getBlob(uri);
     const imageRef = Fire.subscribeStorage().child(fileName);
     await imageRef.put(photo);

@@ -43,6 +43,6 @@ export const Styles = StyleService.create({
 
 export const SafeView = StyleService.create({
     flex: 1,
-    paddingTop: Platform.OS === 'android' ? 24 : 0,
+    paddingTop: Platform.OS === 'android' ? 24 : 10,
     backgroundColor: "transparent"
 });

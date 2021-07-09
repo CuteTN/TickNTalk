@@ -63,6 +63,7 @@ const ScreenMyProfile = () => {
   //Upload ảnh lên Storage
   const uploadAvatarToFirebase = async (uri) => {
     let downloadURL = await uploadPhotoAndGetLink(uri, user.email);
+    //console.log(downloadURL);
     Fire.update(`user/${emailToKey(user.email)}`, {
       avaUrl: downloadURL,
     }).then(
@@ -89,7 +90,7 @@ const ScreenMyProfile = () => {
   const handleUpdate = async () => {
     setModalVisibility(false);
     let result = await pickProcess(true);
-    // console.log(result);
+    //console.log(result);
     updateAvatarLink(result.uri);
     await uploadAvatarToFirebase(result.uri);
   };
@@ -136,7 +137,7 @@ const ScreenMyProfile = () => {
     let modalData = [];
     modalData.push({
       text: `Update your avatar`,
-      onPress: () => handleUpdate(),
+      onPress: async() => await handleUpdate(),
     });
 
     setModalContent(convertToModalContent(modalData));

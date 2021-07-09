@@ -672,7 +672,7 @@ const ScreenMessage = ({ route }) => {
   //#endregion
 
   return (
-    <Layout style={{ flex: 1 }}>
+    <Layout style={{ flex: 1 , backgroundColor: "black"}}>
       <SafeAreaView style={SafeView}>
         <Layout style={{ flex: 1 }}>{ReturnOptions()}</Layout>
       </SafeAreaView>
